@@ -10,7 +10,7 @@ import type {
   TabNavigationState,
 } from "@react-navigation/native";
 import { BlurView } from "expo-blur";
-import { Slot, usePathname, useRouter, withLayoutContext } from "expo-router";
+import { Slot, useRouter, withLayoutContext } from "expo-router";
 import { useContext, useState } from "react";
 import {
   Image,
@@ -18,6 +18,7 @@ import {
   StyleSheet,
   Text,
   TouchableOpacity,
+  useColorScheme,
   View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -35,7 +36,7 @@ export default function TabLayout() {
   const insets = useSafeAreaInsets();
   const [isSideMenuOpen, setIsSideMenuOpen] = useState(false);
   const router = useRouter();
-  const pathname = usePathname();
+  const colorScheme = useColorScheme();
   const { user } = useContext(AuthContext);
   const isLoggedIn = !!user;
 
@@ -43,10 +44,17 @@ export default function TabLayout() {
     <View
       style={[
         styles.container,
+        colorScheme === "dark" ? styles.containerDark : styles.containerLight,
         { paddingTop: insets.top, paddingBottom: insets.bottom },
       ]}
     >
-      <BlurView style={styles.header} intensity={70}>
+      <BlurView
+        style={[
+          styles.header,
+          colorScheme === "dark" ? styles.headerDark : styles.headerLight,
+        ]}
+        intensity={colorScheme === "dark" ? 5 : 70}
+      >
         {isLoggedIn && (
           <Pressable
             style={styles.menuButton}
@@ -54,7 +62,11 @@ export default function TabLayout() {
               setIsSideMenuOpen(true);
             }}
           >
-            <Ionicons name="menu" size={24} color="black" />
+            <Ionicons
+              name="menu"
+              size={24}
+              color={colorScheme === "dark" ? "grey" : "black"}
+            />
           </Pressable>
         )}
         <SideMenu
@@ -67,12 +79,25 @@ export default function TabLayout() {
         />
         {!isLoggedIn && (
           <TouchableOpacity
-            style={styles.loginButton}
+            style={[
+              styles.loginButton,
+              colorScheme === "dark"
+                ? styles.loginButtonDark
+                : styles.loginButtonLight,
+            ]}
             onPress={() => {
               router.navigate(`/login`);
             }}
           >
-            <Text style={styles.loginButtonText}>로그인</Text>
+            <Text
+              style={
+                colorScheme === "dark"
+                  ? styles.loginButtonTextDark
+                  : styles.loginButtonTextLight
+              }
+            >
+              로그인
+            </Text>
           </TouchableOpacity>
         )}
       </BlurView>
@@ -81,18 +106,18 @@ export default function TabLayout() {
           screenOptions={{
             lazy: true, // 탭 이동시 렌더링 (렌더링 최적화)
             tabBarStyle: {
-              backgroundColor: "white",
+              backgroundColor: colorScheme === "dark" ? "#101010" : "white",
               shadowColor: "transparent",
               position: "relative",
             },
             tabBarPressColor: "transparent",
-            tabBarActiveTintColor: "#555",
+            tabBarActiveTintColor: colorScheme === "dark" ? "white" : "#555",
             tabBarIndicatorStyle: {
-              backgroundColor: "black",
+              backgroundColor: colorScheme === "dark" ? "white" : "black",
               height: 1,
             },
             tabBarIndicatorContainerStyle: {
-              backgroundColor: "#aaa",
+              backgroundColor: colorScheme === "dark" ? "#aaa" : "#bbb",
               position: "absolute",
               top: 49,
               height: 1,
@@ -113,6 +138,12 @@ export default function TabLayout() {
 }
 
 const styles = StyleSheet.create({
+  containerDark: {
+    backgroundColor: "#101010",
+  },
+  containerLight: {
+    backgroundColor: "white",
+  },
   headerLogo: {
     width: 48,
     height: 48,
@@ -126,13 +157,21 @@ const styles = StyleSheet.create({
   },
   loginButton: {
     padding: 8,
-    backgroundColor: "black",
     borderRadius: 10,
     position: "absolute",
     right: 16,
   },
-  loginButtonText: {
+  loginButtonDark: {
+    backgroundColor: "white",
+  },
+  loginButtonLight: {
+    backgroundColor: "black",
+  },
+  loginButtonTextLight: {
     color: "white",
+  },
+  loginButtonTextDark: {
+    color: "black",
   },
   container: {
     flex: 1,
@@ -142,6 +181,13 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     paddingHorizontal: 16,
+    height: 50,
+  },
+  headerDark: {
+    backgroundColor: "#101010",
+  },
+  headerLight: {
+    backgroundColor: "white",
   },
   menuButton: {
     padding: 8,

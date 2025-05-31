@@ -1,37 +1,45 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { router, Stack } from "expo-router";
+import { Stack } from "expo-router";
 import * as SecureStore from "expo-secure-store";
 import { createContext, useEffect, useState } from "react";
+import { Alert } from "react-native";
 
-interface User {
+export interface User {
   id: string;
   name: string;
-  description: string;
   profileImageUrl: string;
+  description: string;
+  link?: string;
+  showInstagramBadge?: boolean;
+  isPrivate?: boolean;
 }
 
 export const AuthContext = createContext<{
-  user?: User | null;
-  login?: () => void;
-  logout?: () => void;
+  user: User | null;
+  login?: () => Promise<any>;
+  logout?: () => Promise<any>;
+  updateUser?: (user: User) => void;
 }>({
   user: null,
 });
+
 export default function RootLayout() {
   const [user, setUser] = useState<User | null>(null);
 
   const login = () => {
-    fetch("/login", {
+    return fetch("/login", {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
       body: JSON.stringify({
         username: "jiwonii",
-        password: "123456",
+        password: "1234",
       }),
     })
-      .then((res) => res.json())
+      .then((res) => {
+        if (res.status >= 400) {
+          return Alert.alert("Error", "Invalid credentials");
+        }
+        return res.json();
+      })
       .then((data) => {
         setUser(data.user);
         return Promise.all([
@@ -40,35 +48,33 @@ export default function RootLayout() {
           AsyncStorage.setItem("user", JSON.stringify(data.user)),
         ]);
       })
-      .then(() => {
-        router.push("/(tabs)");
-      })
       .catch(console.error);
   };
 
   const logout = () => {
     setUser(null);
-    AsyncStorage.removeItem("user");
-    SecureStore.deleteItemAsync("accessToken");
-    SecureStore.deleteItemAsync("refreshToken");
+    return Promise.all([
+      SecureStore.deleteItemAsync("accessToken"),
+      SecureStore.deleteItemAsync("refreshToken"),
+      AsyncStorage.removeItem("user"),
+    ]);
+  };
+
+  const updateUser = (user: User) => {
+    setUser(user);
+    AsyncStorage.setItem("user", JSON.stringify(user));
   };
 
   useEffect(() => {
     AsyncStorage.getItem("user").then((user) => {
-      if (user) {
-        setUser(JSON.parse(user));
-      }
+      setUser(user ? JSON.parse(user) : null);
     });
     // TODO: 토큰 유효성 검사
   }, []);
 
   return (
-    <AuthContext value={{ user, login, logout }}>
-      <Stack
-        screenOptions={{
-          headerShown: false,
-        }}
-      >
+    <AuthContext value={{ user, login, logout, updateUser }}>
+      <Stack screenOptions={{ headerShown: false }}>
         <Stack.Screen name="(tabs)" />
         <Stack.Screen name="modal" options={{ presentation: "modal" }} />
       </Stack>

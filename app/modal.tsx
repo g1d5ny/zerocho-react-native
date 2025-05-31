@@ -1,4 +1,4 @@
-import { AntDesign, FontAwesome, Ionicons } from "@expo/vector-icons";
+import { FontAwesome, Ionicons } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
 import * as Location from "expo-location";
 import * as MediaLibrary from "expo-media-library";
@@ -15,6 +15,7 @@ import {
   Text,
   TextInput,
   TouchableOpacity,
+  useColorScheme,
   View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -25,11 +26,6 @@ interface Thread {
   hashtag?: string;
   location?: [number, number];
   imageUris: string[];
-}
-
-interface Topic {
-  show: boolean;
-  list: string[];
 }
 
 export function ListFooter({
@@ -48,7 +44,7 @@ export function ListFooter({
         />
       </View>
       <View>
-        <Pressable onPress={addThread} style={styles.input}>
+        <Pressable onPress={addThread} style={[styles.input]}>
           <Text style={{ color: canAddThread ? "#999" : "#aaa" }}>
             Add to thread
           </Text>
@@ -59,6 +55,7 @@ export function ListFooter({
 }
 
 export default function Modal() {
+  const colorScheme = useColorScheme();
   const router = useRouter();
   const [threads, setThreads] = useState<Thread[]>([
     { id: Date.now().toString(), text: "", imageUris: [] },
@@ -67,20 +64,7 @@ export default function Modal() {
   const [replyOption, setReplyOption] = useState("Anyone");
   const [isDropdownVisible, setIsDropdownVisible] = useState(false);
   const [isPosting, setIsPosting] = useState(false);
-  const [topic, setTopic] = useState("");
-  const [showTopicList, setShowTopicList] = useState<Topic>({
-    show: false,
-    list: [
-      "창업아이디어",
-      "하이에나",
-      "비행기표",
-      "AI",
-      "강의",
-      "인프런",
-      "운동하는직장인",
-      "Threads birthday",
-    ],
-  });
+
   const replyOptions = ["Anyone", "Profiles you follow", "Mentioned only"];
 
   const handleCancel = () => {
@@ -112,85 +96,66 @@ export default function Modal() {
   };
 
   const pickImage = async (id: string) => {
-    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    let { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (status !== "granted") {
       Alert.alert(
-        "Permission not granted",
-        "Please grant permission to use this feature",
+        "Photos permission not granted",
+        "Please grant photos permission to use this feature",
         [
-          {
-            text: "Open settings",
-            onPress: () => {
-              Linking.openSettings();
-            },
-          },
+          { text: "Open settings", onPress: () => Linking.openSettings() },
           {
             text: "Cancel",
-            onPress: () => {
-              return;
-            },
           },
         ]
       );
       return;
     }
-    const result = await ImagePicker.launchImageLibraryAsync({
+    let result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ["images", "livePhotos", "videos"],
-      allowsEditing: true,
+      allowsMultipleSelection: true,
       selectionLimit: 5,
     });
     if (!result.canceled) {
       setThreads((prevThreads) =>
-        prevThreads.map((thread) => {
-          console.log("thread: ", thread.id, id);
-          return thread.id === id
+        prevThreads.map((thread) =>
+          thread.id === id
             ? {
                 ...thread,
                 imageUris: thread.imageUris.concat(
                   result.assets?.map((asset) => asset.uri) ?? []
                 ),
               }
-            : thread;
-        })
+            : thread
+        )
       );
     }
-    // console.log("result: ", result);
   };
 
   const takePhoto = async (id: string) => {
-    const { status } = await ImagePicker.requestCameraPermissionsAsync();
+    let { status } = await ImagePicker.requestCameraPermissionsAsync();
     if (status !== "granted") {
       Alert.alert(
-        "Permission not granted",
-        "Please grant permission to use this feature",
+        "Camera permission not granted",
+        "Please grant camera permission to use this feature",
         [
-          {
-            text: "Open settings",
-            onPress: () => {
-              Linking.openSettings();
-            },
-          },
+          { text: "Open settings", onPress: () => Linking.openSettings() },
           {
             text: "Cancel",
-            onPress: () => {
-              return;
-            },
           },
         ]
       );
       return;
     }
-    const result = await ImagePicker.launchCameraAsync({
+    let result = await ImagePicker.launchCameraAsync({
       mediaTypes: ["images", "livePhotos", "videos"],
-      allowsEditing: true,
+      allowsMultipleSelection: true,
       selectionLimit: 5,
     });
-    console.log("result: ", result);
-    const { status: mediaLibraryStatus } =
-      await MediaLibrary.requestPermissionsAsync();
-    if (mediaLibraryStatus === "granted" && result.assets?.[0].uri) {
+    status = (await MediaLibrary.requestPermissionsAsync()).status;
+    if (status === "granted" && result.assets?.[0].uri) {
       MediaLibrary.saveToLibraryAsync(result.assets[0].uri);
     }
+
     if (!result.canceled) {
       setThreads((prevThreads) =>
         prevThreads.map((thread) =>
@@ -221,7 +186,7 @@ export default function Modal() {
   };
 
   const getMyLocation = async (id: string) => {
-    const { status } = await Location.requestForegroundPermissionsAsync();
+    let { status } = await Location.requestForegroundPermissionsAsync();
     console.log("getMyLocation", status);
     if (status !== "granted") {
       Alert.alert(
@@ -243,12 +208,6 @@ export default function Modal() {
     }
 
     const location = await Location.getCurrentPositionAsync({});
-    // geocode : 위도, 경도를 주소로 변환
-    // reverseGeocode : 주소를 위도, 경도로 변환
-    const address = await Location.reverseGeocodeAsync({
-      latitude: location.coords.latitude,
-      longitude: location.coords.longitude,
-    });
 
     setThreads((prevThreads) =>
       prevThreads.map((thread) =>
@@ -260,10 +219,6 @@ export default function Modal() {
           : thread
       )
     );
-  };
-
-  const updateTopic = (text: string) => {
-    setTopic(text);
   };
 
   const renderThreadItem = ({
@@ -283,44 +238,16 @@ export default function Modal() {
       </View>
       <View style={styles.contentContainer}>
         <View style={styles.userInfoContainer}>
-          <View style={styles.row}>
-            <Text style={styles.username}>jiwonii</Text>
-            <View style={styles.arrow}>
-              <AntDesign name="right" size={16} color="#777" />
-            </View>
-            <View>
-              <TextInput
-                style={styles.topic}
-                placeholder="Add a topic"
-                value={topic}
-                onFocus={() =>
-                  setShowTopicList((prev) => {
-                    return { ...prev, show: true };
-                  })
-                }
-              />
-              {showTopicList.show && (
-                <FlatList
-                  data={showTopicList.list}
-                  renderItem={renderTopicItem}
-                  scrollEnabled
-                  style={{
-                    flex: 1,
-                    position: "absolute",
-                    top: 24,
-                    left: 0,
-                    zIndex: 1,
-                    width: 150,
-                    backgroundColor: "white",
-                    borderRadius: 10,
-                  }}
-                  contentContainerStyle={{
-                    padding: 10,
-                  }}
-                />
-              )}
-            </View>
-          </View>
+          <Text
+            style={[
+              styles.username,
+              colorScheme === "dark"
+                ? styles.usernameDark
+                : styles.usernameLight,
+            ]}
+          >
+            jiwonii
+          </Text>
           {index > 0 && (
             <TouchableOpacity
               onPress={() => removeThread(item.id)}
@@ -332,7 +259,10 @@ export default function Modal() {
           )}
         </View>
         <TextInput
-          style={styles.input}
+          style={[
+            styles.input,
+            colorScheme === "dark" ? styles.inputDark : styles.inputLight,
+          ]}
           placeholder={"What's new?"}
           placeholderTextColor="#999"
           value={item.text}
@@ -400,31 +330,42 @@ export default function Modal() {
     </View>
   );
 
-  const renderTopicItem = ({ item }: { item: string }) => (
-    <Pressable
-      onPress={() => {
-        setTopic(item);
-        setShowTopicList((prev) => {
-          return { ...prev, show: false };
-        });
-      }}
-      style={styles.topicItem}
-    >
-      <Text>{item}</Text>
-    </Pressable>
-  );
-
   return (
-    <View style={[styles.container]}>
-      <View style={styles.header}>
+    <View
+      style={[
+        styles.container,
+        { paddingTop: insets.top },
+        colorScheme === "dark" ? styles.containerDark : styles.containerLight,
+      ]}
+    >
+      <View
+        style={[
+          styles.header,
+          colorScheme === "dark" ? styles.headerDark : styles.headerLight,
+        ]}
+      >
         <Pressable onPress={handleCancel} disabled={isPosting}>
-          <Text style={[styles.cancel, isPosting && styles.disabledText]}>
+          <Text
+            style={[
+              styles.cancel,
+              colorScheme === "dark" ? styles.cancelDark : styles.cancelLight,
+              isPosting && styles.disabledText,
+            ]}
+          >
             Cancel
           </Text>
         </Pressable>
-        <Text style={styles.title}>New thread</Text>
+        <Text
+          style={[
+            styles.title,
+            colorScheme === "dark" ? styles.titleDark : styles.titleLight,
+          ]}
+        >
+          New thread
+        </Text>
         <View style={styles.headerRightPlaceholder} />
       </View>
+
       <FlatList
         data={threads}
         keyExtractor={(item) => item.id}
@@ -442,22 +383,16 @@ export default function Modal() {
             }}
           />
         }
-        style={styles.list}
-        contentContainerStyle={{ backgroundColor: "#ddd" }}
+        style={[
+          styles.list,
+          colorScheme === "dark" ? styles.listDark : styles.listLight,
+        ]}
+        contentContainerStyle={{
+          backgroundColor: colorScheme === "dark" ? "#101010" : "white",
+        }}
         keyboardShouldPersistTaps="handled"
       />
-      <View style={[styles.footer, { paddingBottom: insets.bottom + 10 }]}>
-        <Pressable onPress={() => setIsDropdownVisible(true)}>
-          <Text style={styles.footerText}>{replyOption} can reply & quote</Text>
-        </Pressable>
-        <Pressable
-          style={[styles.postButton, !canPost && styles.postButtonDisabled]}
-          disabled={!canPost}
-          onPress={handlePost}
-        >
-          <Text style={styles.postButtonText}>Post</Text>
-        </Pressable>
-      </View>
+
       <RNModal
         transparent={true}
         visible={isDropdownVisible}
@@ -469,7 +404,13 @@ export default function Modal() {
           onPress={() => setIsDropdownVisible(false)}
         >
           <View
-            style={[styles.dropdownContainer, { bottom: insets.bottom + 30 }]}
+            style={[
+              styles.dropdownContainer,
+              { bottom: insets.bottom + 30 },
+              colorScheme === "dark"
+                ? styles.dropdownContainerDark
+                : styles.dropdownContainerLight,
+            ]}
           >
             {replyOptions.map((option) => (
               <Pressable
@@ -486,6 +427,9 @@ export default function Modal() {
                 <Text
                   style={[
                     styles.dropdownOptionText,
+                    colorScheme === "dark"
+                      ? styles.dropdownOptionTextDark
+                      : styles.dropdownOptionTextLight,
                     option === replyOption && styles.selectedOptionText,
                   ]}
                 >
@@ -496,26 +440,66 @@ export default function Modal() {
           </View>
         </Pressable>
       </RNModal>
+
+      <View
+        style={[
+          styles.footer,
+          { paddingBottom: insets.bottom + 10 },
+          colorScheme === "dark" ? styles.footerDark : styles.footerLight,
+        ]}
+      >
+        <Pressable onPress={() => setIsDropdownVisible(true)}>
+          <Text
+            style={[
+              styles.footerText,
+              colorScheme === "dark"
+                ? styles.footerTextDark
+                : styles.footerTextLight,
+            ]}
+          >
+            {replyOption} can reply & quote
+          </Text>
+        </Pressable>
+        <Pressable
+          style={[
+            styles.postButton,
+            colorScheme === "dark"
+              ? styles.postButtonDark
+              : styles.postButtonLight,
+            !canPost &&
+              (colorScheme === "dark"
+                ? styles.postButtonDisabledDark
+                : styles.postButtonDisabledLight),
+          ]}
+          disabled={!canPost}
+          onPress={handlePost}
+        >
+          <Text
+            style={[
+              styles.postButtonText,
+              colorScheme === "dark"
+                ? styles.postButtonTextDark
+                : styles.postButtonTextLight,
+            ]}
+          >
+            Post
+          </Text>
+        </Pressable>
+      </View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  arrow: {
-    paddingHorizontal: 10,
-  },
-  topicItem: {
-    padding: 10,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: "#e5e5e5",
-  },
-  row: {
-    flexDirection: "row",
-    alignItems: "center",
-  },
   container: {
     flex: 1,
     backgroundColor: "#fff",
+  },
+  containerLight: {
+    backgroundColor: "#fff",
+  },
+  containerDark: {
+    backgroundColor: "#101010",
   },
   header: {
     flexDirection: "row",
@@ -523,26 +507,46 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingHorizontal: 16,
     paddingVertical: 12,
+  },
+  headerLight: {
     backgroundColor: "#fff",
+  },
+  headerDark: {
+    backgroundColor: "#101010",
   },
   headerRightPlaceholder: {
     width: 60,
   },
   cancel: {
-    color: "#000",
     fontSize: 16,
+  },
+  cancelLight: {
+    color: "#000",
+  },
+  cancelDark: {
+    color: "#fff",
   },
   disabledText: {
     color: "#ccc",
   },
   title: {
-    color: "#000",
     fontSize: 16,
     fontWeight: "600",
   },
+  titleLight: {
+    color: "#000",
+  },
+  titleDark: {
+    color: "#fff",
+  },
   list: {
     flex: 1,
-    backgroundColor: "#eee",
+  },
+  listLight: {
+    backgroundColor: "white",
+  },
+  listDark: {
+    backgroundColor: "#101010",
   },
   threadContainer: {
     flexDirection: "row",
@@ -585,20 +589,25 @@ const styles = StyleSheet.create({
   username: {
     fontWeight: "600",
     fontSize: 15,
+  },
+  usernameLight: {
     color: "#000",
   },
-  topic: {
-    fontWeight: "600",
-    fontSize: 15,
-    color: "#000",
+  usernameDark: {
+    color: "#fff",
   },
   input: {
     fontSize: 15,
-    color: "#000",
     paddingTop: 4,
     paddingBottom: 8,
     minHeight: 24,
     lineHeight: 20,
+  },
+  inputLight: {
+    color: "#000",
+  },
+  inputDark: {
+    color: "#fff",
   },
   actionButtons: {
     flexDirection: "row",
@@ -638,29 +647,52 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingHorizontal: 16,
     paddingTop: 10,
-    backgroundColor: "#fff",
     position: "absolute",
     bottom: 0,
     left: 0,
     right: 0,
   },
+  footerLight: {
+    backgroundColor: "white",
+  },
+  footerDark: {
+    backgroundColor: "#101010",
+  },
   footerText: {
-    color: "#8e8e93",
     fontSize: 14,
+  },
+  footerTextLight: {
+    color: "#8e8e93",
+  },
+  footerTextDark: {
+    color: "#555",
   },
   postButton: {
     paddingVertical: 8,
     paddingHorizontal: 18,
-    backgroundColor: "#000",
     borderRadius: 18,
   },
-  postButtonDisabled: {
+  postButtonLight: {
+    backgroundColor: "black",
+  },
+  postButtonDark: {
+    backgroundColor: "white",
+  },
+  postButtonDisabledLight: {
     backgroundColor: "#ccc",
   },
+  postButtonDisabledDark: {
+    backgroundColor: "#555",
+  },
   postButtonText: {
-    color: "#fff",
     fontSize: 15,
     fontWeight: "600",
+  },
+  postButtonTextLight: {
+    color: "white",
+  },
+  postButtonTextDark: {
+    color: "black",
   },
   modalOverlay: {
     flex: 1,
@@ -669,10 +701,15 @@ const styles = StyleSheet.create({
   },
   dropdownContainer: {
     width: 200,
-    backgroundColor: "#fff",
     borderRadius: 10,
     marginHorizontal: 10,
     overflow: "hidden",
+  },
+  dropdownContainerLight: {
+    backgroundColor: "white",
+  },
+  dropdownContainerDark: {
+    backgroundColor: "#101010",
   },
   dropdownOption: {
     paddingVertical: 15,
@@ -683,7 +720,12 @@ const styles = StyleSheet.create({
   selectedOption: {},
   dropdownOptionText: {
     fontSize: 16,
+  },
+  dropdownOptionTextLight: {
     color: "#000",
+  },
+  dropdownOptionTextDark: {
+    color: "#fff",
   },
   selectedOptionText: {
     fontWeight: "600",

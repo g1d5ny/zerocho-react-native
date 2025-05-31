@@ -1,50 +1,59 @@
-# Welcome to your Expo app 👋
+# 제로초 React Native 강의
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+## Section 1
 
-## Get started
+`npx expo install:check`: Expo 프로젝트에서 설치된 패키지들의 호환성을 유지하며 업데이트하기 위해 권장되는 명령어
 
-1. Install dependencies
+## Section 2
 
-   ```bash
-   npm install
-   ```
+### Expo Router
 
-2. Start the app
+Expo Router: React Native 및 웹 애플리케이션을 위한 파일 기반 라우터
 
-   ```bash
-   npx expo start
-   ```
+앱 디렉터리에 파일이 추가되면 해당 파일은 자동으로 내비게이션의 경로가 됨.\
+Expo Router에서 URL 경로가 결정되는 가장 기본적인 원리: **파일 시스템의 폴더 및 파일 구조**
 
-In the output, you'll find options to open the app in a
+**\_layout**: 해당 디렉토리 내 라우트들의 공통 부모 레이아웃 제공\
+**(그룹폴더)**: URL에는 영향을 주지 않으면서 특정 라우트 그룹에 레이아웃이나 설정을 적용
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+**router method**\
+`push`: 현재 화면 위에 새 화면을 쌓아 네비게이션 기록에 추가\
+`replace`: 현재 화면을 새 화면으로 대체하여 기록에 쌓지 않음. 뒤로 가기 동작에 영향을 줌.
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+## Section 3
 
-## Get a fresh project
+### miragejs
 
-When you're ready, run:
+mirage: 서버 모킹 라이브러리\
+(실무에서는 api가 나오기 전에 내가 임시로 데이터 설정하여 UI 작업할 수 있음.)
 
-```bash
-npm run reset-project
-```
+### SecureStore
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+기기 내 중요 정보 저장하는 저장소 (토큰, 비밀번호 등)\
+(실무에서는 accessToken, refreshToken 등을 SecureStore에 저장할 수 있음.)
 
-## Learn more
+### @react-navigation/material-top-tabs
 
-To learn more about developing your project with Expo, look at the following resources:
+스와이프 되는 탭 네비게이션
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+### uri-scheme
 
-## Join the community
+**딥 링크**
 
-Join our community of developers creating universal apps.
+1. 앱이 설치된 경우 원하는 경로로 이동 가능
+   Android: App Link
+   iOS: Universal Link
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+2. 앱이 미설치된 경우\
+
+   - Andorid, iOS 추가적인 설정 필요
+
+   - 앱을 설치하고 다시 원하는 경로로 이동\
+     솔루션 사용 (Dynamic Link, Branch, ...)
+
+3. 앱을 호출하는 스키마\
+
+- scheme: jiwonii -> 주소 jiwonii://
+- scheme 없는 경우\
+  android : com.jiwonii.threads://
+  ios: bundleIdentifier://

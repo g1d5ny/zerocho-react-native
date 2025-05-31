@@ -6,7 +6,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 export default function Index() {
   const router = useRouter();
   const pathname = usePathname();
-  const isLoggedIn = false;
+  const isLoggedIn = true;
   console.log("pathname", pathname);
 
   return (

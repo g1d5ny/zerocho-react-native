@@ -12,7 +12,7 @@ import {
 } from "react-native";
 export default function TabLayout() {
   const router = useRouter();
-  const isLoggedIn = true;
+  const isLoggedIn = false;
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
 
   const openLoginModal = () => {
@@ -21,6 +21,11 @@ export default function TabLayout() {
 
   const closeLoginModal = () => {
     setIsLoginModalOpen(false);
+  };
+
+  const toLoginPage = () => {
+    closeLoginModal();
+    router.navigate("/login");
   };
 
   const AnimatedTabBarButton = ({
@@ -110,6 +115,7 @@ export default function TabLayout() {
           listeners={{
             tabPress: (e) => {
               e.preventDefault();
+              console.log("isLoggedIn: ", isLoggedIn);
               if (isLoggedIn) {
                 router.navigate("/modal");
               } else {
@@ -184,8 +190,17 @@ export default function TabLayout() {
             backgroundColor: "rgba(0, 0, 0, 0.5)",
           }}
         >
-          <View style={{ backgroundColor: "white", padding: 20 }}>
-            <Text>Login Modal</Text>
+          <View
+            style={{
+              flexDirection: "row",
+              backgroundColor: "white",
+              padding: 20,
+              justifyContent: "space-between",
+            }}
+          >
+            <Pressable onPress={toLoginPage}>
+              <Text>Login Modal</Text>
+            </Pressable>
             <TouchableOpacity onPress={closeLoginModal}>
               <Ionicons name="close" size={24} color="#555" />
             </TouchableOpacity>

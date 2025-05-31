@@ -1,23 +1,61 @@
+import SideMenu from "@/components/SideMenu";
+import { Ionicons } from "@expo/vector-icons";
 import { BlurView } from "expo-blur";
 import { usePathname, useRouter } from "expo-router";
-import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { useContext, useState } from "react";
+import {
+  Image,
+  Pressable,
+  SafeAreaView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { AuthContext } from "../../_layout";
 
 export default function Index() {
   const router = useRouter();
   const pathname = usePathname();
-  const isLoggedIn = true;
-  console.log("pathname", pathname);
+  const insets = useSafeAreaInsets();
+  const [isSideMenuOpen, setIsSideMenuOpen] = useState(false);
+  const { user, logout } = useContext(AuthContext);
+  const isLoggedIn = !!user;
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView
+      style={[
+        styles.container,
+        { paddingTop: insets.top, paddingBottom: insets.bottom },
+      ]}
+    >
       <BlurView style={styles.header} intensity={70}>
+        {isLoggedIn && (
+          <Pressable
+            style={styles.menuButton}
+            onPress={() => {
+              setIsSideMenuOpen(true);
+            }}
+          >
+            <Ionicons name="menu" size={24} color="black" />
+          </Pressable>
+        )}
+        <SideMenu
+          isVisible={isSideMenuOpen}
+          onClose={() => setIsSideMenuOpen(false)}
+        />
         <Image
           source={require("@/assets/images/react-logo.png")}
           style={styles.headerLogo}
         />
         {!isLoggedIn && (
-          <TouchableOpacity style={styles.loginButton}>
+          <TouchableOpacity
+            style={styles.loginButton}
+            onPress={() => {
+              router.navigate(`/login`);
+            }}
+          >
             <Text style={styles.loginButtonText}>로그인</Text>
           </TouchableOpacity>
         )}
@@ -25,14 +63,14 @@ export default function Index() {
       {isLoggedIn && (
         <View style={styles.tabContainer}>
           <View style={styles.tab}>
-            <TouchableOpacity onPress={() => router.push(`/`)}>
+            <TouchableOpacity onPress={() => router.navigate(`/`)}>
               <Text style={{ color: pathname === "/" ? "red" : "black" }}>
                 For you
               </Text>
             </TouchableOpacity>
           </View>
           <View style={styles.tab}>
-            <TouchableOpacity onPress={() => router.push(`/following`)}>
+            <TouchableOpacity onPress={() => router.navigate(`/following`)}>
               <Text style={{ color: pathname === "/" ? "black" : "red" }}>
                 Following
               </Text>
@@ -62,8 +100,8 @@ export default function Index() {
 // StyleSheet: 스타일 캐싱처리 최적화
 // 숫자: PX 단위가 아닌 DP, DIP, ...등을 따름 (화면 비율에 맞게 디자인)
 const styles = StyleSheet.create({
-  header: {
-    alignItems: "center",
+  container: {
+    flex: 1,
   },
   tabContainer: {
     flexDirection: "row",
@@ -72,26 +110,30 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: "center",
   },
-  container: {
-    flex: 1,
+  header: {
+    alignItems: "center",
   },
   headerLogo: {
-    width: 42,
+    width: 42, // DP, DIP
     height: 42,
   },
   loginButton: {
     position: "absolute",
-    right: 10,
+    right: 20,
     top: 0,
+    backgroundColor: "black",
     borderWidth: 1,
     borderColor: "black",
-    padding: 10,
-    borderRadius: 10,
-    backgroundColor: "black",
-    paddingHorizontal: 20,
     paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 10,
   },
   loginButtonText: {
     color: "white",
+  },
+  menuButton: {
+    position: "absolute",
+    left: 20,
+    top: 10,
   },
 });

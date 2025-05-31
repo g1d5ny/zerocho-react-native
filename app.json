@@ -59,7 +59,8 @@
           "cameraPermission": "The app needs access to your camera to let you share them with your threads.",
           "isAccessMediaLocationEnabled": true
         }
-      ]
+      ],
+      "expo-secure-store"
     ],
     "experiments": {
       "typedRoutes": true

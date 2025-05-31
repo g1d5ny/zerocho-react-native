@@ -21,7 +21,11 @@ if (__DEV__) {
             accessToken: "access-token",
             refreshToken: "refresh-token",
             user: {
-              id: "jiwonii",
+              id: "jiwon",
+              name: "jiwonii",
+              description: "jiwonii's description",
+              profileImageUrl:
+                "https://avatars.githubusercontent.com/u/885857?v=4",
             },
           };
         } else {

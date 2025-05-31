@@ -45,7 +45,7 @@ mirage: 서버 모킹 라이브러리\
 
 ### SecureStore
 
-기기 내 중요 정보 저장하는 저장소 (토큰, 비밀번호 등)\
+기기 내 민감한 정보 영구히 저장하는 저장소 (토큰, 비밀번호 등)\
 (실무에서는 accessToken, refreshToken 등을 SecureStore에 저장할 수 있음.)
 
 ### @react-navigation/material-top-tabs
@@ -95,3 +95,13 @@ lazy: 탭 이동시 렌더링 (렌더링 최적화)
 5. 스플래시 로고 애니메이션 동작 시작
 6. 스플래시 로고 애니메이션 완료
 7. 스플래시 사라짐
+
+### 인앱브라우저
+
+app.json 내 속성 `experimentalLauncherActivity: true`로 하면 안드로이드에서 앱을 백그라운드로 내려도 인앱브라우저 유지
+
+`WebBrowser.openAuthSessionAsync(url, redirectUrl, options)`: 소셜 로그인 시 뜨는 브라우저를 인앱브라우저로 대
+
+인앱브라우저 vs. 웹뷰\
+**인앱브라우저: API**\
+**웹뷰: 컴포넌트 (앱 내에 웹사이트를 내장)**

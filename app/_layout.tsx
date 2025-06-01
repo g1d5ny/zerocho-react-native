@@ -46,12 +46,12 @@ function AnimatedAppLoader({
     prepare();
   }, [image]);
 
-  const login = () => {
+  const login = async () => {
     return fetch("/login", {
       method: "POST",
       body: JSON.stringify({
         username: "jiwonii",
-        password: "1234",
+        password: "123456",
       }),
     })
       .then((res) => {

@@ -1,16 +1,30 @@
 import SideMenu from "@/components/SideMenu";
 import { Ionicons } from "@expo/vector-icons";
-import { useContext, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import {
   Image,
   Pressable,
+  ScrollView,
   StyleSheet,
+  Text,
   TextInput,
   useColorScheme,
   View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { AuthContext } from "../_layout";
+
+interface User {
+  id: string;
+  name: string;
+  nickname: string;
+  description: string;
+  profileImageUrl: string;
+  isVerified: boolean;
+  followersCount: number;
+  followingCount: number;
+  isFollowing: boolean;
+}
 
 export default function Index() {
   const insets = useSafeAreaInsets();
@@ -19,12 +33,24 @@ export default function Index() {
   const [isSideMenuOpen, setIsSideMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const colorScheme = useColorScheme();
+  const [users, setUsers] = useState<User[]>([]);
+
+  useEffect(() => {
+    fetch("/users")
+      .then((res) => res.json())
+      .then((data) => {
+        setUsers(data.users);
+      })
+      .catch((err) => {
+        console.error(err);
+      });
+  }, []);
 
   return (
     <View
       style={[
         styles.container,
-        { paddingTop: insets.top, paddingBottom: insets.bottom },
+        { paddingTop: insets.top },
         colorScheme === "dark" ? styles.containerDark : styles.containerLight,
       ]}
     >
@@ -92,11 +118,141 @@ export default function Index() {
           />
         </View>
       </View>
+      <ScrollView style={styles.usersContainer}>
+        {users
+          .filter((users) => users.id !== user?.id)
+          .map((user) => {
+            return (
+              <View key={user.id} style={styles.userContainer}>
+                <Image
+                  source={{ uri: user.profileImageUrl }}
+                  style={styles.profileImage}
+                />
+                <View style={styles.userInfoContainer}>
+                  <View style={styles.userInfo}>
+                    <Text
+                      style={[
+                        styles.userName,
+                        colorScheme === "dark"
+                          ? styles.userNameDark
+                          : styles.userNameLight,
+                      ]}
+                    >
+                      {user.id}
+                    </Text>
+                    {user.isVerified && (
+                      <Ionicons
+                        name="checkmark-circle"
+                        size={16}
+                        color="#0095F6"
+                        style={styles.verifiedIcon}
+                      />
+                    )}
+                  </View>
+                  <Text
+                    ellipsizeMode="tail"
+                    numberOfLines={1}
+                    style={styles.description}
+                  >
+                    {user.description}
+                  </Text>
+                  <Text
+                    style={[
+                      styles.followersCount,
+                      colorScheme === "dark"
+                        ? styles.followersCountDark
+                        : styles.followersCountLight,
+                    ]}
+                  >
+                    팔로워 {user.followersCount}명
+                  </Text>
+                </View>
+                <Pressable
+                  style={[
+                    styles.followButton,
+                    {
+                      backgroundColor:
+                        colorScheme === "dark" ? "white" : "black",
+                    },
+                  ]}
+                >
+                  <Text
+                    style={[
+                      styles.followingText,
+                      {
+                        color: colorScheme === "dark" ? "black" : "white",
+                      },
+                    ]}
+                  >
+                    {user.isFollowing ? "팔로우 취소" : "팔로우"}
+                  </Text>
+                </Pressable>
+              </View>
+            );
+          })}
+      </ScrollView>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
+  followingText: {
+    fontWeight: "bold",
+  },
+  followersCount: {
+    color: "gray",
+  },
+  followersCountDark: {
+    color: "white",
+  },
+  followersCountLight: {
+    color: "black",
+  },
+  userNameDark: {
+    color: "white",
+  },
+  userNameLight: {
+    color: "black",
+  },
+  description: {
+    color: "gray",
+    marginRight: 10,
+  },
+  verifiedIcon: {
+    marginLeft: 5,
+  },
+  followButton: {
+    padding: 10,
+    borderRadius: 5,
+  },
+  userName: {
+    fontWeight: "bold",
+  },
+  userInfoContainer: {
+    flex: 1,
+  },
+  userInfo: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  profileImage: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+  },
+  userContainer: {
+    flex: 1,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+    paddingVertical: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: "gray",
+  },
+  usersContainer: {
+    flex: 1,
+    paddingHorizontal: 20,
+  },
   container: {
     flex: 1,
   },

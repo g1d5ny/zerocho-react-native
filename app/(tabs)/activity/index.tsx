@@ -1,9 +1,9 @@
 import NotFound from "@/app/+not-found";
-import ActivityItem from "@/components/Activity";
+import ActivityItem, { ActivityItemProps } from "@/components/Activity";
 import SideMenu from "@/components/SideMenu";
 import { Ionicons } from "@expo/vector-icons";
 import { usePathname, useRouter } from "expo-router";
-import { useContext, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import {
   Image,
   Pressable,
@@ -25,6 +25,13 @@ export default function Index() {
   const colorScheme = useColorScheme();
   const isLoggedIn = !!user;
   const [isSideMenuOpen, setIsSideMenuOpen] = useState(false);
+  const [activity, setActivity] = useState<ActivityItemProps[]>([]);
+
+  useEffect(() => {
+    fetch("/activity")
+      .then((res) => res.json())
+      .then((data) => setActivity(data.activity));
+  }, []);
 
   if (
     ![
@@ -44,7 +51,7 @@ export default function Index() {
     <View
       style={[
         styles.container,
-        { paddingTop: insets.top, paddingBottom: insets.bottom },
+        { paddingTop: insets.top },
         colorScheme === "dark" ? styles.containerDark : styles.containerLight,
       ]}
     >
@@ -77,7 +84,7 @@ export default function Index() {
           onClose={() => setIsSideMenuOpen(false)}
         />
       </View>
-      <View style={styles.tabBar}>
+      <ScrollView horizontal style={styles.tabBar}>
         <View>
           <TouchableOpacity
             style={[
@@ -260,61 +267,31 @@ export default function Index() {
             </Text>
           </TouchableOpacity>
         </View>
-      </View>
+      </ScrollView>
       <ScrollView>
-        <ActivityItem
-          id="1"
-          username="John Doe"
-          timeAgo="1h"
-          content="팔로우"
-          type="followed"
-          avatar="https://randomuser.me/api/portraits/men/1.jpg"
-        />
-        <ActivityItem
-          id="2"
-          username="John Doe"
-          timeAgo="1h"
-          postId="1"
-          content="Hello, comment!"
-          type="reply"
-          avatar="https://randomuser.me/api/portraits/men/1.jpg"
-        />
-        <ActivityItem
-          id="2"
-          username="John Doe"
-          timeAgo="1h"
-          postId="1"
-          content="liked your post"
-          type="like"
-          avatar="https://randomuser.me/api/portraits/men/1.jpg"
-        />
-        <ActivityItem
-          id="3"
-          username="John Doe"
-          timeAgo="1h"
-          postId="1"
-          content="reposted your post"
-          type="repost"
-          avatar="https://randomuser.me/api/portraits/men/1.jpg"
-        />
-        <ActivityItem
-          id="5"
-          username="John Doe"
-          timeAgo="1h"
-          postId="1"
-          content="mentioned you"
-          type="mention"
-          avatar="https://randomuser.me/api/portraits/men/1.jpg"
-        />
-        <ActivityItem
-          id="4"
-          username="John Doe"
-          timeAgo="1h"
-          postId="1"
-          content="quoted your post"
-          type="quote"
-          avatar="https://randomuser.me/api/portraits/men/1.jpg"
-        />
+        {activity
+          .filter((item) =>
+            pathname === "/activity"
+              ? true
+              : item.type === pathname.split("/").pop()
+          )
+          .map((item) => {
+            return (
+              <ActivityItem
+                key={item.postId}
+                id={item.id}
+                username={item.username}
+                content={item.content}
+                type={item.type}
+                avatar={item.avatar}
+                likes={item.likes}
+                reposts={item.reposts}
+                comments={item.comments}
+                shares={item.shares}
+                createdAt={item.createdAt}
+              />
+            );
+          })}
       </ScrollView>
     </View>
   );
@@ -378,9 +355,11 @@ const styles = StyleSheet.create({
     color: "white",
   },
   tabBar: {
-    flexDirection: "row",
-    justifyContent: "space-between",
+    // flexDirection: "row",
+    // justifyContent: "space-between",
     paddingHorizontal: 10,
+    flexGrow: 0,
+    flexShrink: 0,
   },
   logo: {
     width: 32,

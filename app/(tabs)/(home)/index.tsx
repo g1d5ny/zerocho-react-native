@@ -1,8 +1,6 @@
 import Post from "@/components/Post";
-import { useRouter } from "expo-router";
 import { ScrollView, StyleSheet, useColorScheme } from "react-native";
 export default function Index() {
-  const router = useRouter();
   const colorScheme = useColorScheme();
 
   return (

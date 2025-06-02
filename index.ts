@@ -55,12 +55,16 @@ if (__DEV__) {
       user: Factory.extend({
         id: () => faker.person.firstName(),
         name: () => faker.person.fullName(),
+        nickname: () => faker.person.middleName(),
         description: () => faker.lorem.sentence(),
         profileImageUrl: () =>
           `https://avatars.githubusercontent.com/u/${Math.floor(
             Math.random() * 100_000
           )}?v=4`,
         isVerified: () => Math.random() > 0.5,
+        followersCount: () => Math.floor(Math.random() * 1000),
+        followingCount: () => Math.floor(Math.random() * 1000),
+        isFollowing: () => Math.random() > 0.5,
       }),
       post: Factory.extend({
         id: () => faker.string.numeric(6),
@@ -72,6 +76,37 @@ if (__DEV__) {
         likes: () => Math.floor(Math.random() * 100),
         comments: () => Math.floor(Math.random() * 100),
         reposts: () => Math.floor(Math.random() * 100),
+      }),
+      activity: Factory.extend({
+        id: () => faker.string.numeric(6),
+        content: () => faker.lorem.paragraph(),
+        imageUrls: () =>
+          Array.from({ length: Math.floor(Math.random() * 3) }, () =>
+            faker.image.urlLoremFlickr()
+          ),
+        type: () =>
+          faker.helpers.arrayElement([
+            "follows",
+            "replies",
+            "mentions",
+            "quotes",
+            "reposts",
+            "verified",
+          ]),
+        createdAt: () => faker.date.recent().toISOString(),
+        username: () => faker.person.fullName(),
+        avatar: () =>
+          `https://avatars.githubusercontent.com/u/${Math.floor(
+            Math.random() * 100_000
+          )}?v=4`,
+        otherCount: () => Math.floor(Math.random() * 100),
+        link: () => faker.internet.url(),
+        reply: () => faker.lorem.sentence(),
+        likes: () => Math.floor(Math.random() * 100),
+        replies: () => Math.floor(Math.random() * 100),
+        reposts: () => Math.floor(Math.random() * 100),
+        shares: () => Math.floor(Math.random() * 100),
+        postId: () => faker.string.numeric(6),
       }),
     },
     // 시드는 데이터를 생성할 때 사용되는 함수
@@ -88,6 +123,21 @@ if (__DEV__) {
           user,
         });
       });
+      server
+        .createList("activity", 10, {
+          user: users[0],
+        })
+        .sort((a, b) => {
+          return (
+            new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+          );
+        });
+
+      // users.forEach((user) => {
+      //   server.createList("activity", 5, {
+      //     user,
+      //   });
+      // });
     },
     // 라우트는 데이터를 전달할 때 사용되는 함수
     routes() {
@@ -115,6 +165,16 @@ if (__DEV__) {
         const post = schema.find("post", request.params.id);
         const comments = schema.all("post").models.slice(0, 10);
         return new Response(200, {}, { post, comments });
+      });
+
+      this.get("/activity", (schema, request) => {
+        const activity = schema.all("activity").models;
+        return new Response(200, {}, { activity });
+      });
+
+      this.get("/users", (schema, request) => {
+        const users = schema.all("user").models;
+        return new Response(200, {}, { users });
       });
 
       this.post("/login", (schema, request) => {

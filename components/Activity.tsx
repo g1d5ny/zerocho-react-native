@@ -1,4 +1,5 @@
-import { FontAwesome, Ionicons } from "@expo/vector-icons";
+import { getTimeAgo } from "@/utils";
+import { Feather, FontAwesome, Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import {
   Image,
@@ -13,59 +14,82 @@ export interface ActivityItemProps {
   id: string;
   username: string;
   otherCount?: number;
-  timeAgo: string;
+  createdAt: string;
   content: string;
   type: string;
   link?: string;
   reply?: string;
   likes?: number;
+  reposts?: number;
+  comments?: number;
+  shares?: number;
   actionButton?: React.ReactNode;
   avatar: string;
   postId?: string;
 }
 
+interface Icon {
+  color: string;
+  name: string;
+  component: any;
+}
+
+const iconMap: Record<string, Icon> = {
+  follows: {
+    color: "#FF9500",
+    name: "person",
+    component: Ionicons,
+  },
+  mentions: {
+    color: "#FF3B30",
+    name: "at",
+    component: FontAwesome,
+  },
+  comments: {
+    color: "#007AFF",
+    name: "reply",
+    component: FontAwesome,
+  },
+  quotes: {
+    color: "#007AFF",
+    name: "quote-left",
+    component: FontAwesome,
+  },
+  replies: {
+    color: "#007AFF",
+    name: "reply",
+    component: FontAwesome,
+  },
+  reposts: {
+    color: "#007AFF",
+    name: "retweet",
+    component: FontAwesome,
+  },
+  verified: {
+    color: "#007AFF",
+    name: "check-circle",
+    component: FontAwesome,
+  },
+};
+
 export default function ActivityItem({
-  id,
   username,
   otherCount,
-  timeAgo,
   content,
   type,
   link,
   reply,
   likes,
+  reposts,
+  comments,
+  shares,
+  createdAt,
   actionButton,
   avatar,
   postId,
 }: ActivityItemProps) {
   const router = useRouter();
   const colorScheme = useColorScheme();
-
-  let iconColor = "#FF3B30";
-  let iconName: any = "heart";
-  let IconComponent: any = FontAwesome;
-
-  if (type === "follow" || type === "followed") {
-    iconColor = "#FF9500";
-    iconName = "person";
-    IconComponent = Ionicons;
-  } else if (type === "mention") {
-    iconColor = "#FF3B30";
-    iconName = "at";
-    IconComponent = FontAwesome;
-  } else if (type === "reply") {
-    iconColor = "#007AFF";
-    iconName = "reply";
-    IconComponent = FontAwesome;
-  } else if (type === "quote") {
-    iconColor = "#007AFF";
-    iconName = "quote-left";
-    IconComponent = FontAwesome;
-  } else if (type === "repost") {
-    iconColor = "#007AFF";
-    iconName = "retweet";
-    IconComponent = FontAwesome;
-  }
 
   // 알림 항목 클릭 시 이동 로직
   const handleItemPress = () => {
@@ -89,16 +113,20 @@ export default function ActivityItem({
     router.push(`/${username}`);
   };
 
+  const IconColor = iconMap[type].color;
+  const IconComponent = iconMap[type].component;
+
   return (
     <Pressable onPress={handleItemPress} style={styles.activityItemContainer}>
       {/* Avatar + Icon Container */}
       <Pressable onPress={handleAvatarPress} style={styles.avatarContainer}>
         <Image source={{ uri: avatar }} style={styles.avatar} />
-        <View style={[styles.iconCircle, { backgroundColor: iconColor }]}>
-          <IconComponent name={iconName} size={12} color="white" />
+        <View style={[styles.iconCircle, { backgroundColor: IconColor }]}>
+          {IconComponent && (
+            <IconComponent name={iconMap[type].name} size={12} color="white" />
+          )}
         </View>
       </Pressable>
-
       {/* Content Container */}
       <View style={styles.activityContent}>
         <View style={styles.activityHeader}>
@@ -113,14 +141,7 @@ export default function ActivityItem({
             {username}
           </Text>
           {otherCount && <Text style={styles.otherCount}>+{otherCount}명</Text>}
-          <Text
-            style={[
-              styles.timeAgo,
-              colorScheme === "dark" ? styles.timeAgoDark : styles.timeAgoLight,
-            ]}
-          >
-            {timeAgo}
-          </Text>
+          <Text style={[styles.timeAgo]}>{getTimeAgo(createdAt)}</Text>
         </View>
 
         {type === "followed" ? (
@@ -136,7 +157,7 @@ export default function ActivityItem({
           </Text>
         ) : (
           <Text
-            numberOfLines={2}
+            numberOfLines={3}
             style={[
               styles.activityText,
               colorScheme === "dark"
@@ -147,14 +168,12 @@ export default function ActivityItem({
             {content}
           </Text>
         )}
-
         {link && (
           <View style={styles.linkContainer}>
             <FontAwesome name="link" size={14} color="#007AFF" />
             <Text style={styles.linkText}>{link}</Text>
           </View>
         )}
-
         {reply && (
           <View style={styles.replyContainer}>
             <Text
@@ -169,12 +188,29 @@ export default function ActivityItem({
             </Text>
           </View>
         )}
-
         <View style={styles.activityFooter}>
           {likes !== undefined && (
-            <View style={styles.likesContainer}>
-              <FontAwesome name="heart" size={12} color="#FF3B30" />
-              <Text style={styles.likesText}>{likes}</Text>
+            <View style={styles.actionContainer}>
+              <Feather name="heart" size={20} color="#666" />
+              <Text style={styles.actionText}>{likes}</Text>
+            </View>
+          )}
+          {comments !== undefined && (
+            <View style={styles.actionContainer}>
+              <Feather name="message-circle" size={20} color="#666" />
+              <Text style={styles.actionText}>{comments}</Text>
+            </View>
+          )}
+          {reposts !== undefined && (
+            <View style={styles.actionContainer}>
+              <Feather name="repeat" size={20} color="#666" />
+              <Text style={styles.actionText}>{reposts}</Text>
+            </View>
+          )}
+          {shares !== undefined && (
+            <View style={styles.actionContainer}>
+              <Feather name="send" size={20} color="#666" />
+              <Text style={styles.actionText}>{shares}</Text>
             </View>
           )}
           {actionButton && actionButton}
@@ -244,13 +280,7 @@ const styles = StyleSheet.create({
   },
   timeAgo: {
     fontSize: 14,
-    color: "#888",
-  },
-  timeAgoDark: {
-    color: "white",
-  },
-  timeAgoLight: {
-    color: "#888",
+    color: "gray",
   },
   activityText: {
     fontSize: 14,
@@ -299,15 +329,15 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginTop: 8,
   },
-  likesContainer: {
+  actionContainer: {
     flexDirection: "row",
     alignItems: "center",
     marginRight: 16,
   },
-  likesText: {
+  actionText: {
     marginLeft: 4,
     fontSize: 12,
-    color: "#FF3B30",
+    color: "#666",
   },
   followBackButton: {
     borderWidth: 1,

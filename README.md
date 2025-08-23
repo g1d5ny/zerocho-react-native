@@ -118,11 +118,39 @@ app.json 내 속성 `experimentalLauncherActivity: true`로 하면 안드로이�
 **웹뷰: 컴포넌트 (앱 내에 웹사이트를 내장)**
 
 ## Section 4
+### FlatList : RN의 기본 가상화 리스트인 VirtualizedList를 기반으로 한 리스트 뷰
+1. lazy Loading: 화면에 보이는 아이템 + 약간의 버퍼만 메모리에 둠
+2. 아이템 크기를 스크롤 할 때마다 측정해야함
+  => 리스트가 길어질수록 측정 지연, 빈 화면 같은 현상이 생김
+3. 재사용 X: 안보이는 아이템을 unmount -> 다시 mount
+   => 메모리 chrun (메모리 할당/해제 자주 일어나는 현상) 발생
+4. windowSize 속성: 한 화면에 몇 배수의 아이템을 메모리에 유지할지 정하는 속성
+  - 스크롤을 빨리 하든, 천천히 하든, 위아래로 항상 같은 양의 버퍼만 렌더링
+  - windowSize가 작으면 -> 스크롤 빠르게 할 때 빈 화면 생김
+  - windowSize가 크면 -> 메모리 과다 사용, 불필요한 render 발생
 
 ### FlashList
-1. FlatList보다 성능 좋은 리스트뷰 (어떤점이 더 좋은지 공부 필요)
+1. FlatList보다 성능 좋은 리스트뷰 (FlatList의 한계가 보완돼서 나옴)
+   - 정확한 아이템 크기 추정: 초기에 한 번만 아이템 크기를 측정하고 이후에는 캐싱된 크기를 사용함
+   - estimatedItemSize 속성을 이용하여 더 빠르게 레이아웃 계산
+     => 스크롤할 때 매번 측정하는 비용 제거
+   - 셀 재사용: 네이티브 (UITableView, RecyclerView)처럼 컴포넌트를 재사용함
+   - 화면 밖으로 스크롤된 아이템은 숨김 처리 후 재활용 pool에 넣고, 새 아이템이 필요하면 pool에서 꺼내 데이터만 바꿔줌
+     => mount/unmount 반복이 사라져 메모리 churn 줄고, CPU 사용도 감소
+   - 렌더링 최적화: 화면에 필요한 것만 미리 정확히 렌더링 -> 불필요한 React reconciliation 줄어듦
+   - Window 관리 개선: FlatList는 단순히 windowSize 버퍼만 사용하지만, FlashList는 동적 window 관리를 함
+
+     #### 동적 window 원리
+     1. 스크롤 속도 기반으로 window 크기를 조절
+       - 사용자가 천천히 스크롤 -> 작은 window로도 충분
+       - 사용자가 빨리 스크롤 -> window 크기를 순간적으로 늘려서, 미리 더 많은 아이템을 렌더링 -> blank 없이 매끄럽게 보임
+     2. 방향성 고려
+       - 지금 스크롤하는 방향을 감지해서 스크롤할 가능성이 높은 쪽에 더 많은 아이템을 준비하고 반대쪽은 줄임
+     3. 화면 크기 / density 반영
+       - 태블릿과 같은 큰 화면에서는 더 많은 아이템을 한 번에 보이니까 window도 유연하게 늘려줌
+   
 2. ver 1, 2가 있음. 2는 아직 알파 단계로 실무에서는 아직 적용 불가
 3. ver 2는 없어진 속성들이 많음. 그 중에서 estimatedSize가 있는데, 2에선 개발자가 속성을 지정하지 않아도 FlashList에서 알아서 최적화를 해줌
 4. expo53은 ver1을 씀 (ver2 안정화 이슈로)
 5. 새로운 아키텍쳐를 사용함
-6. keyExtractor가 필요 없음
+6. keyExtractor가 필요 없음 

@@ -40,8 +40,18 @@ Expo Router에서 URL 경로가 결정되는 가장 기본적인 원리: **파�
 
 ### miragejs
 
-mirage: 서버 모킹 라이브러리\
+mirage: 서버 모킹 라이브러리. fetch 요청을 가로채서 가짜 API 응답 반환\
 (실무에서는 api가 나오기 전에 내가 임시로 데이터 설정하여 UI 작업할 수 있음.)
+
+#### fetch
+1. 자바스크립트 내장 API
+2. response json 변환 필요
+3. 복잡한 처리가 힘들어 간단한 요청에 유리
+
+#### axios
+1. http 관련 라이브러리
+2. response json 자동 변환
+3. 에러처리, 인터셉터 등 복잡한 API 통신에 유리
 
 ### SecureStore
 
@@ -51,7 +61,8 @@ mirage: 서버 모킹 라이브러리\
 ### @react-navigation/material-top-tabs
 
 스와이프 되는 탭 네비게이션\
-lazy: 탭 이동시 렌더링 (렌더링 최적화)
+lazy: 탭이 활성화 될 떄까지 해당 화면의 렌더링을 지연시킴 (렌더링 최적화)
+lazyPreloadDistance: 현재 활성 탭으로부터 몇개 탭 거리까지만 미리 로드할지 / lazyPreloadDistance를 설정하지 않아도 lazy가 true이면 탭 이동 중에 옆 탭의 데이터를 미리 불러올 수 있음
 
 ### uri-scheme
 
@@ -105,3 +116,13 @@ app.json 내 속성 `experimentalLauncherActivity: true`로 하면 안드로이�
 인앱브라우저 vs. 웹뷰\
 **인앱브라우저: API**\
 **웹뷰: 컴포넌트 (앱 내에 웹사이트를 내장)**
+
+## Section 4
+
+### FlashList
+1. FlatList보다 성능 좋은 리스트뷰 (어떤점이 더 좋은지 공부 필요)
+2. ver 1, 2가 있음. 2는 아직 알파 단계로 실무에서는 아직 적용 불가
+3. ver 2는 없어진 속성들이 많음. 그 중에서 estimatedSize가 있는데, 2에선 개발자가 속성을 지정하지 않아도 FlashList에서 알아서 최적화를 해줌
+4. expo53은 ver1을 씀 (ver2 안정화 이슈로)
+5. 새로운 아키텍쳐를 사용함
+6. keyExtractor가 필요 없음

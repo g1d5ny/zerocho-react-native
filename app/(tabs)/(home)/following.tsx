@@ -8,6 +8,20 @@ export default function Following() {
   const colorScheme = useColorScheme();
   const path = usePathname();
   const [posts, setPosts] = useState<PostType[]>([]);
+  const [refreshing, setRefreshing] = useState(false);
+
+  const onRefresh = () => {
+    setRefreshing(true);
+    setPosts([]);
+    fetch(`/posts?type=following&cursor=${posts.at(-1)?.id}`)
+      .then((res) => res.json())
+      .then((data) => {
+        setPosts(data.posts);
+      })
+      .finally(() => {
+        setRefreshing(false);
+      });
+  };
 
   const onEndReached = () => {
     fetch(`/posts?type=following&cursor=${posts.at(-1)?.id}`)
@@ -32,6 +46,8 @@ export default function Following() {
         onEndReached={onEndReached}
         onEndReachedThreshold={2}
         estimatedItemSize={350}
+        refreshing={refreshing}
+        onRefresh={onRefresh}
       />
     </View>
   );

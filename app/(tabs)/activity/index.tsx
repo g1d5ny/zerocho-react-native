@@ -359,7 +359,7 @@ const styles = StyleSheet.create({
     // justifyContent: "space-between",
     paddingHorizontal: 10,
     flexGrow: 0,
-    flexShrink: 0,
+    // flexShrink: 0,
   },
   logo: {
     width: 32,

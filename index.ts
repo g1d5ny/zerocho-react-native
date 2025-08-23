@@ -1,6 +1,5 @@
-import "expo-router/entry";
-
 import { faker } from "@faker-js/faker";
+import "expo-router/entry";
 import {
   belongsTo,
   createServer,
@@ -11,7 +10,6 @@ import {
   RestSerializer,
   Server,
 } from "miragejs";
-import { type User } from "./app/_layout";
 
 declare global {
   interface Window {
@@ -19,7 +17,7 @@ declare global {
   }
 }
 
-let jiwonii: User;
+let jiwonii: any;
 
 if (__DEV__) {
   if (window.server) {
@@ -123,6 +121,10 @@ if (__DEV__) {
           user,
         });
       });
+      server.createList("post", 5, {
+        user: jiwonii,
+      });
+      /// 미션 코드
       server
         .createList("activity", 10, {
           user: users[0],
@@ -151,20 +153,27 @@ if (__DEV__) {
             user: schema.find("user", "jiwon"),
           });
         });
-        return new Response(200, {}, { posts });
+        return posts;
       });
 
       this.get("/posts", (schema, request) => {
-        console.log("user.all", schema.all("user").models);
-        const cursor = parseInt((request.queryParams.cursor as string) || "0");
-        const posts = schema.all("post").models.slice(cursor, cursor + 10);
-        return new Response(200, {}, { posts });
+        let posts = schema.all("post");
+        if (request.queryParams.type === "following") {
+          posts = posts.filter((post) => post.user?.id === jiwonii?.id);
+        }
+        let targetIndex = -1;
+        if (request.queryParams.cursor) {
+          targetIndex = posts.models.findIndex(
+            (v) => v.id === request.queryParams.cursor
+          );
+        }
+        return posts.slice(targetIndex + 1, targetIndex + 11);
       });
 
       this.get("/posts/:id", (schema, request) => {
         const post = schema.find("post", request.params.id);
         const comments = schema.all("post").models.slice(0, 10);
-        return new Response(200, {}, { post, comments });
+        return { post, comments };
       });
 
       this.get("/activity", (schema, request) => {

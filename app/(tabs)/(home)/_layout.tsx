@@ -105,6 +105,7 @@ export default function TabLayout() {
         <MaterialTopTabs
           screenOptions={{
             lazy: true, // 탭 이동시 렌더링 (렌더링 최적화)
+            lazyPreloadDistance: 1,
             tabBarStyle: {
               backgroundColor: colorScheme === "dark" ? "#101010" : "white",
               shadowColor: "transparent",

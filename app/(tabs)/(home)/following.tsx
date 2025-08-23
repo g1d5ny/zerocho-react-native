@@ -1,7 +1,7 @@
 import Post, { type IPost as PostType } from "@/components/Post";
 import { FlashList } from "@shopify/flash-list";
 import { usePathname } from "expo-router";
-import React, { useCallback, useState } from "react";
+import React, { useState } from "react";
 import { StyleSheet, useColorScheme, View } from "react-native";
 
 export default function Following() {
@@ -9,15 +9,15 @@ export default function Following() {
   const path = usePathname();
   const [posts, setPosts] = useState<PostType[]>([]);
 
-  const onEndReached = useCallback(() => {
-    fetch(`/posts?type=${path.split("/").pop()}&cursor=${posts.at(-1)?.id}`)
+  const onEndReached = () => {
+    fetch(`/posts?type=following&cursor=${posts.at(-1)?.id}`)
       .then((res) => res.json())
       .then((data) => {
         if (data.posts.length > 0) {
           setPosts((prev) => [...prev, ...data.posts]);
         }
       });
-  }, [posts, path]);
+  };
 
   return (
     <View

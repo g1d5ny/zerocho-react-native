@@ -1,7 +1,7 @@
 import Post, { type IPost as PostType } from "@/components/Post";
 import { FlashList } from "@shopify/flash-list";
 import { usePathname } from "expo-router";
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { StyleSheet, useColorScheme, View } from "react-native";
 
 export default function Index() {
@@ -10,28 +10,17 @@ export default function Index() {
   const [posts, setPosts] = useState<PostType[]>([]);
 
   const onEndReached = () => {
-    if (posts.length > 0) {
-      fetch(`/posts?type=${path.split("/").pop()}&cursor=${posts.at(-1)?.id}`)
-        .then((res) => res.json())
-        .then((data) => {
-          if (data.posts.length > 0) {
-            setPosts((prev) => {
-              return [...prev, ...data.posts];
-            });
-          }
-        })
-        .catch(console.error);
-    }
-  };
-
-  useEffect(() => {
-    setPosts([]);
-    fetch(`/posts`)
+    fetch(`/posts?&cursor=${posts.at(-1)?.id}`)
       .then((res) => res.json())
       .then((data) => {
-        setPosts(data.posts);
-      });
-  }, [path]);
+        if (data.posts.length > 0) {
+          setPosts((prev) => {
+            return [...prev, ...data.posts];
+          });
+        }
+      })
+      .catch(console.error);
+  };
 
   return (
     <View

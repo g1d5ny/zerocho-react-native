@@ -153,4 +153,25 @@ app.json 내 속성 `experimentalLauncherActivity: true`로 하면 안드로이�
 3. ver 2는 없어진 속성들이 많음. 그 중에서 estimatedSize가 있는데, 2에선 개발자가 속성을 지정하지 않아도 FlashList에서 알아서 최적화를 해줌
 4. expo53은 ver1을 씀 (ver2 안정화 이슈로)
 5. 새로운 아키텍쳐를 사용함
-6. keyExtractor가 필요 없음 
+6. keyExtractor가 필요 없음
+
+### Animation
+1. useSharedValue
+   - 애니메이션 처리를 할 때 사용하는 값
+   - JS 스레드가 아닌 UI 스레드에서 동작함
+   - JS와 Native 스레드 간 공유 가능
+
+2. panResponder
+   - Pan: 터치 스크린에서 손가락을 드래그하는 동작
+   - Responder: 이벤트에 반응하는 컴포넌트
+   - PanResponder를 useRef로 감쌈으로써 패닝 이벤트를 받아서 애니메이션 처리를 할 수 있게 해줌
+   - onStartShouldSetPanResponder
+     - true -> 패닝 이벤트를 받아서 애니메이션 처리를 할 수 있게 해줌
+     - false -> 패닝 이벤트를 받지 않음
+  - onPanResponderMove: 패닝 이벤트가 발생할 때 마다 호출됨
+  - onPanResponderRelease: 패닝 이벤트가 끝났을 때 호출됨
+  - onPanResponderTerminate: 패닝 이벤트가 중단되었을 떄 호출됨
+
+3. useAnimatedScrollHandler: 스크롤 이벤트를 받아서 애니메이션 처리를 할 수 있게 도와줌
+
+

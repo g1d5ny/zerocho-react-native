@@ -1,13 +1,25 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Asset } from "expo-asset";
 import Constants from "expo-constants";
+import * as Notifications from "expo-notifications";
 import { Stack } from "expo-router";
 import * as SecureStore from "expo-secure-store";
 import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
 import { createContext, useContext, useEffect, useRef, useState } from "react";
-import { Alert, Animated, StyleSheet, View } from "react-native";
+import { Alert, Animated, Linking, StyleSheet, View } from "react-native";
 import Toast, { BaseToast } from "react-native-toast-message";
+
+// First, set the handler that will cause the notification
+// to show the alert
+Notifications.setNotificationHandler({
+  handleNotification: async () => ({
+    shouldPlaySound: true, // 소리 재생 여부
+    shouldSetBadge: true, // 알람 온 갯수 표시 여부
+    shouldShowBanner: true, // 알림 배너 표시 여부
+    shouldShowList: true, // 알림 리스트 표시 여부
+  }),
+});
 
 SplashScreen.preventAutoHideAsync();
 export interface User {
@@ -138,7 +150,21 @@ function AnimatedSplashScreen({
         ]
         // TODO: 토큰 유효성 검사
       );
-      SplashScreen.hideAsync();
+      await SplashScreen.hideAsync();
+
+      const { status } = await Notifications.getPermissionsAsync();
+      if (status !== "granted") {
+        return Linking.openSettings();
+      }
+      // Second, call scheduleNotificationAsync()
+      const notification = await Notifications.scheduleNotificationAsync({
+        content: {
+          title: "Look at that notification",
+          body: "I'm so proud of myself!",
+        },
+        trigger: null, // 알람이 트리거 되는 상황을 설정. null: 알람이 바로 트리거 됨
+      });
+      console.log("notification: ", notification);
     } catch (e) {
       console.error(e);
     } finally {

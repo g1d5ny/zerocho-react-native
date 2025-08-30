@@ -27,6 +27,7 @@ export default function Index() {
   const { pullDownPosition } = useContext(AnimationContext);
 
   const onEndReached = useCallback(() => {
+    console.log("posts: ", posts);
     console.log("onEndReached", posts.at(-1)?.id);
     fetch(`/posts?cursor=${posts.at(-1)?.id}`)
       .then((res) => res.json())

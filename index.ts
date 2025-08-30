@@ -69,12 +69,13 @@ if (__DEV__) {
         content: () => faker.lorem.paragraph(),
         imageUrls: () =>
           Array.from({ length: Math.floor(Math.random() * 3) }, () =>
-            faker.image.urlLoremFlickr()
+            faker.image.urlLoremFlickr({ category: "nature" })
           ),
         likes: () => Math.floor(Math.random() * 100),
         comments: () => Math.floor(Math.random() * 100),
         reposts: () => Math.floor(Math.random() * 100),
       }),
+      // 미션코드
       activity: Factory.extend({
         id: () => faker.string.numeric(6),
         content: () => faker.lorem.paragraph(),
@@ -134,7 +135,6 @@ if (__DEV__) {
             new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
           );
         });
-
       // users.forEach((user) => {
       //   server.createList("activity", 5, {
       //     user,
@@ -143,20 +143,49 @@ if (__DEV__) {
     },
     // 라우트는 데이터를 전달할 때 사용되는 함수
     routes() {
-      this.post("/posts", (schema, request) => {
-        const { posts } = JSON.parse(request.requestBody);
+      this.post("/posts", async (schema, request) => {
+        const formData = request.requestBody as unknown as FormData;
+        const posts: Record<string, string | string[]>[] = [];
+        formData.forEach(async (value, key) => {
+          const match = key.match(/posts\[(\d+)\]\[(\w+)\](\[(\d+)\])?$/);
+          console.log("key", key, match, value);
+          if (match) {
+            const [_, index, field, , imageIndex] = match;
+            const i = parseInt(index);
+            const imgI = parseInt(imageIndex);
+            if (!posts[i]) {
+              posts[i] = {};
+            }
+            if (field === "imageUrls") {
+              if (!posts[i].imageUrls) {
+                posts[i].imageUrls = [] as string[];
+              }
+              (posts[i].imageUrls as string[])[imgI] = (
+                value as unknown as { uri: string }
+              ).uri;
+            } else if (field === "location") {
+              posts[i].location = JSON.parse(value as string);
+            } else {
+              posts[i][field] = value as string;
+            }
+          }
+        });
+        console.log("posts", posts);
+        await new Promise((resolve) => setTimeout(resolve, 3000));
         posts.forEach((post: any) => {
           schema.create("post", {
+            id: post.id,
             content: post.content,
             imageUrls: post.imageUrls,
             location: post.location,
-            user: schema.find("user", "jiwon"),
+            user: schema.find("user", jiwonii?.id),
           });
         });
         return posts;
       });
 
       this.get("/posts", (schema, request) => {
+        console.log("request", request.queryParams);
         let posts = schema.all("post");
         if (request.queryParams.type === "following") {
           posts = posts.filter((post) => post.user?.id === jiwonii?.id);
@@ -167,13 +196,14 @@ if (__DEV__) {
             (v) => v.id === request.queryParams.cursor
           );
         }
-        return posts.slice(targetIndex + 1, targetIndex + 11);
+        return posts
+          .sort((a, b) => parseInt(b.id) - parseInt(a.id))
+          .slice(targetIndex + 1, targetIndex + 11);
       });
 
       this.get("/posts/:id", (schema, request) => {
         return schema.find("post", request.params.id);
       });
-
       this.get("/posts/:id/comments", (schema, request) => {
         const comments = schema.all("post");
         let targetIndex = -1;
@@ -182,16 +212,30 @@ if (__DEV__) {
             (v) => v.id === request.queryParams.cursor
           );
         }
-        return comments.slice(targetIndex + 1, targetIndex + 11);
+        return comments
+          .sort((a, b) => parseInt(b.id) - parseInt(a.id))
+          .slice(targetIndex + 1, targetIndex + 11);
       });
-
       this.get("/users/:id", (schema, request) => {
+        console.log("request", request.params.id);
         return schema.find("user", request.params.id.slice(1));
       });
 
-      this.get("/activity", (schema, request) => {
-        const activity = schema.all("activity").models;
-        return new Response(200, {}, { activity });
+      this.get("/users/:id/:type", (schema, request) => {
+        console.log("request", request.queryParams);
+        let posts = schema.all("post");
+        if (request.params.type === "threads") {
+          posts = posts.filter((post) => post.user?.id === request.params.id);
+        } else if (request.params.type === "reposts") {
+          posts = posts.filter((post) => post.user?.id !== request.params.id);
+        }
+        let targetIndex = -1;
+        if (request.queryParams.cursor) {
+          targetIndex = posts.models.findIndex(
+            (v) => v.id === request.queryParams.cursor
+          );
+        }
+        return posts.slice(targetIndex + 1, targetIndex + 11);
       });
 
       this.get("/users", (schema, request) => {

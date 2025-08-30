@@ -1,7 +1,7 @@
 import { Ionicons } from "@expo/vector-icons";
 import { type BottomTabBarButtonProps } from "@react-navigation/bottom-tabs";
 import { Tabs, usePathname, useRouter } from "expo-router";
-import React, { useContext, useRef, useState } from "react";
+import { useContext, useRef, useState } from "react";
 import {
   Animated,
   Modal,

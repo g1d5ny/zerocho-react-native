@@ -1,4 +1,4 @@
-import Post, { type IPost as PostType } from "@/components/Post";
+import Post, { type Post as PostType } from "@/components/Post";
 import { FlashList } from "@shopify/flash-list";
 import * as Haptics from "expo-haptics";
 import { usePathname } from "expo-router";
@@ -27,7 +27,6 @@ export default function Following() {
   const { pullDownPosition } = useContext(AnimationContext);
 
   const onEndReached = useCallback(() => {
-    console.log("onEndReached", posts.at(-1)?.id);
     fetch(`/posts?type=following&cursor=${posts.at(-1)?.id}`)
       .then((res) => res.json())
       .then((data) => {

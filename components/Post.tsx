@@ -13,7 +13,7 @@ import {
   View,
 } from "react-native";
 
-export interface IPost {
+export interface Post {
   id: string;
   user: {
     id: string;
@@ -32,18 +32,18 @@ export interface IPost {
   location?: [number, number];
 }
 
-export interface DetailedPost extends IPost {
-  // Post의 필드들: id, user.id, displayName, content, timeAgo, likes, comments, reposts, user.isVerified?, user.profileImageUrl?, image?
+export interface DetailedPost extends Post {
+  // Post의 필드들: id, username, displayName, content, timeAgo, likes, comments, reposts, isVerified?, avatar?, image?
   isLiked?: boolean; // isLiked 추가
   shares?: number; // shares 추가
 }
 
-export default function Post({ item }: { item: IPost }) {
+export default function Post({ item }: { item: Post }) {
   const router = useRouter();
   const colorScheme = useColorScheme();
   // 공유 기능 핸들러
-  const handleShare = async (id: string, postId: string) => {
-    const shareUrl = `threadc://@${id}/post/${postId}`;
+  const handleShare = async (username: string, postId: string) => {
+    const shareUrl = `threadc://@${username}/post/${postId}`;
     try {
       await Share.share({
         message: shareUrl,
@@ -56,7 +56,7 @@ export default function Post({ item }: { item: IPost }) {
   };
 
   // 게시글 클릭 핸들러 수정
-  const handlePostPress = (post: IPost) => {
+  const handlePostPress = (post: Post) => {
     // DetailedPost 타입에 맞게 데이터 변환 (isLiked, shares는 상세 화면에서 관리)
     const detailedPost: DetailedPost = {
       ...post,
@@ -69,7 +69,7 @@ export default function Post({ item }: { item: IPost }) {
   };
 
   // 사용자 정보 클릭 핸들러 (아바타 또는 이름)
-  const handleUserPress = (post: IPost) => {
+  const handleUserPress = (post: Post) => {
     router.push(`/@${post.user.id}`);
   };
 
@@ -85,10 +85,10 @@ export default function Post({ item }: { item: IPost }) {
             {item.user.profileImageUrl ? (
               <Image
                 source={{ uri: item.user.profileImageUrl }}
-                style={styles.profileImageUrl}
+                style={styles.avatar}
               />
             ) : (
-              <View style={styles.profileImageUrl}>
+              <View style={styles.avatar}>
                 <Ionicons name="person-circle" size={40} color="#ccc" />
               </View>
             )}
@@ -98,7 +98,7 @@ export default function Post({ item }: { item: IPost }) {
               <View style={styles.usernameRow}>
                 <Text
                   style={[
-                    styles.id,
+                    styles.username,
                     colorScheme === "dark"
                       ? styles.usernameDark
                       : styles.usernameLight,
@@ -121,6 +121,7 @@ export default function Post({ item }: { item: IPost }) {
           <Feather name="more-horizontal" size={16} color="#888" />
         </View>
       </View>
+
       <View style={styles.postContent} pointerEvents="box-none">
         <Text
           style={[
@@ -140,14 +141,16 @@ export default function Post({ item }: { item: IPost }) {
           >
             {item.imageUrls &&
               item.imageUrls.length > 0 &&
-              item.imageUrls.map((image) => (
-                <Image
-                  key={image}
-                  source={{ uri: image }}
-                  style={styles.postImage}
-                  resizeMode="cover"
-                />
-              ))}
+              item.imageUrls.map((image, index) => {
+                return (
+                  <Image
+                    key={index}
+                    source={{ uri: image }}
+                    style={styles.postImage}
+                    resizeMode="cover"
+                  />
+                );
+              })}
           </ScrollView>
         </View>
         {!item.imageUrls?.length && item.link && (
@@ -163,6 +166,7 @@ export default function Post({ item }: { item: IPost }) {
           <Text style={styles.postText}>{item.location.join(", ")}</Text>
         )}
       </View>
+
       <View style={styles.postActions}>
         <TouchableOpacity style={styles.actionButton}>
           <Feather name="heart" size={20} color="#666" />
@@ -210,7 +214,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "flex-start",
   },
-  profileImageUrl: {
+  avatar: {
     width: 40,
     height: 40,
     borderRadius: 20,
@@ -225,7 +229,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
   },
-  id: {
+  username: {
     fontWeight: "600",
     fontSize: 15,
     marginRight: 4,

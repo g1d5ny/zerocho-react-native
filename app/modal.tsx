@@ -19,6 +19,7 @@ import {
   View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import Toast from "react-native-toast-message";
 
 interface Thread {
   id: string;
@@ -92,6 +93,15 @@ export default function Modal() {
       });
     });
 
+    Toast.show({
+      text1: "Posting...",
+      text2: "Please wait...",
+      type: "customToast",
+      visibilityTime: 5000,
+      position: "bottom",
+      bottomOffset: 20,
+    });
+
     fetch("/posts", {
       method: "POST",
       headers: {
@@ -102,10 +112,30 @@ export default function Modal() {
       .then((res) => res.json())
       .then((data) => {
         console.log("post result", data, data[0].userId, data[0].id);
-        router.replace(`/@${data[0].userId}/post/${data[0].id}`);
+        Toast.hide();
+        Toast.show({
+          text1: "Post posted",
+          type: "customToast",
+          visibilityTime: 5000,
+          position: "bottom",
+          bottomOffset: 20,
+          onPress: () => {
+            console.log("post pressed", data);
+            router.replace(`/@${data[0].userId}/post/${data[0].id}`);
+            Toast.hide();
+          },
+        });
       })
       .catch((err) => {
         console.error("post error", err);
+        Toast.hide();
+        Toast.show({
+          text1: "Post failed",
+          type: "customToast",
+          visibilityTime: 5000,
+          position: "bottom",
+          bottomOffset: 20,
+        });
       });
   };
 

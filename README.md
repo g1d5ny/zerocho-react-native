@@ -197,3 +197,20 @@ app.json 내 속성 `experimentalLauncherActivity: true`로 하면 안드로이�
   - 인터넷 연결 필요
   - ex) 소셜 미디어 알림, 채팅 등
 
+### 각종 빌드 정리
+1. Expo Go
+   - Metro (Dev Server) + Dev App (Native X)
+   - npx expo start --android
+2. Development builds
+   - Metro (Dev Server) + Dev App (Native O + prebuild)
+   - npx expo start
+   - eas build --profile development --platform android (release용)
+   - npx expo run:android (development용)
+3. Prebuild
+   - android, ios folder generate
+4. Preview/Production builds
+   - eas build --platform android
+   - production ready
+   - Metro Server X -> Your backend server
+   - MirageJS disable (if(__DEV__) 사용 필요)
+

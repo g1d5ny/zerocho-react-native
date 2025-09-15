@@ -1,4 +1,5 @@
 import { faker } from "@faker-js/faker";
+import * as Device from "expo-device";
 import "expo-router/entry";
 import {
   belongsTo,
@@ -19,7 +20,7 @@ declare global {
 
 let jiwonii: any;
 
-if (__DEV__) {
+if (__DEV__ && !Device.isDevice) {
   if (window.server) {
     window.server.shutdown();
   }

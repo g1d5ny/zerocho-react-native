@@ -86,6 +86,14 @@ lazyPreloadDistance: 현재 활성 탭으로부터 몇개 탭 거리까지만 �
   android : com.jiwonii.threads://
   ios: bundleIdentifier://
 
+4. 딥링킹 이동하는 방법
+   const url = notification.request.content.data?.url;
+   // 방법 1
+   router.push(url.replace("threadc://", "") as Href);
+
+   // 방법 2
+   Linking.openURL(url);
+
 ### 다크모드
 
 1. 다크모드 설정하는 명령어\

@@ -1,5 +1,6 @@
 import { initializeKakaoSDK } from "@react-native-kakao/core";
 import { login as kakaoLogin, me } from "@react-native-kakao/user";
+import * as AppleAuthentication from "expo-apple-authentication";
 import { Redirect, router } from "expo-router";
 import { useContext, useEffect } from "react";
 import {
@@ -23,6 +24,20 @@ export default function Login() {
     console.log("result: ", result);
     const user = await me();
     console.log("user: ", user);
+  };
+
+  const onAppleLogin = async () => {
+    try {
+      const credentials = await AppleAuthentication.signInAsync({
+        requestedScopes: [
+          AppleAuthentication.AppleAuthenticationScope.FULL_NAME,
+          AppleAuthentication.AppleAuthenticationScope.EMAIL,
+        ],
+      });
+      console.log("credentials: ", credentials);
+    } catch (error) {
+      console.error("onAppleLoginerror: ", error);
+    }
   };
 
   useEffect(() => {
@@ -59,7 +74,7 @@ export default function Login() {
       </Pressable>
       <Pressable
         style={[styles.loginButton, styles.appleLoginButton]}
-        onPress={login}
+        onPress={onAppleLogin}
       >
         <Text style={styles.loginButtonText}>Apple Login</Text>
       </Pressable>

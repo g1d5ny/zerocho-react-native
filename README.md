@@ -214,3 +214,22 @@ app.json 내 속성 `experimentalLauncherActivity: true`로 하면 안드로이�
    - Metro Server X -> Your backend server
    - MirageJS disable (if(__DEV__) 사용 필요)
 
+### 환경변수
+1. .env.local이 .env보다 우선순위가 더 높음
+2. 환경 변수 지정하는 방법
+   - process.env.EXPO_PUBLIC_KAKAO_APP_KEY (is defined in .env.local or .env)
+   - Constants.expoConfig?.extra?.kakaoAppKey (is defined in app.config.js)
+3. app.config.js extras: 정말 민감한 비밀 값(예: 백엔드 서버 관리자 키)을 Expo 앱 내에서 관리할 때 노출 위험이 있어 가장 권장되지 않는 방식
+5. app.json vs. app.config.js
+  - app.json
+    1. 순수한 JSON 형식의 설정 파일
+    2. 환경 변수 사용 불가 (-> app.config.js에서 사용해야함)
+    3. expo 설정에 적합
+  - app.config.js
+    1. js 코드를 실행할 수 있는 설정 파일
+    2. process.env를 통해 환경 변수 사용 가능
+    3. 런타임에 설정 값 계산 가능
+5. 이슈: eas build할 떄, 환경 변수가 git으로 인식되지 않으면 반영이 안되는 이슈가 있음
+  해결 방법 1: expo 홈페이지에서 환경변수 입력란에 환경변수 추가함
+  해결 방법 2: .env를 git에 잠시 인식되도록 하고 eas build 후 .env를 다시 gitignore
+

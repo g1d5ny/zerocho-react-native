@@ -233,3 +233,7 @@ app.json 내 속성 `experimentalLauncherActivity: true`로 하면 안드로이�
   해결 방법 1: expo 홈페이지에서 환경변수 입력란에 환경변수 추가함
   해결 방법 2: .env를 git에 잠시 인식되도록 하고 eas build 후 .env를 다시 gitignore
 
+### Expo Modules
+expo module 생성하는 법
+1. npx create-expo-module@latest (--local)
+2. npx expo install expo-modules-core

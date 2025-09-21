@@ -25,17 +25,19 @@ export default function PostScreen() {
   const { postID } = useLocalSearchParams();
 
   useEffect(() => {
-    fetch(`/posts/${postID}`)
-      .then((res) => res.json())
-      .then((data) => {
-        setPost(data.post);
-      });
+    if (__DEV__) {
+      fetch(`/posts/${postID}`)
+        .then((res) => res.json())
+        .then((data) => {
+          setPost(data.post);
+        });
 
-    fetch(`/posts/${postID}/comments`)
-      .then((res) => res.json())
-      .then((data) => {
-        setComments(data.posts);
-      });
+      fetch(`/posts/${postID}/comments`)
+        .then((res) => res.json())
+        .then((data) => {
+          setComments(data.posts);
+        });
+    }
   }, []);
 
   return (

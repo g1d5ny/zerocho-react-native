@@ -29,26 +29,28 @@ export default function Index() {
   const onEndReached = useCallback(() => {
     console.log("posts: ", posts);
     console.log("onEndReached", posts.at(-1)?.id);
-    fetch(`/posts?cursor=${posts.at(-1)?.id}`)
-      .then((res) => res.json())
-      .then((data) => {
-        if (data.posts.length > 0) {
-          setPosts((prev) => [...prev, ...data.posts]);
-        }
-      });
+    // fetch(`/posts?cursor=${posts.at(-1)?.id}`)
+    //   .then((res) => res.json())
+    //   .then((data) => {
+    //     if (data.posts.length > 0) {
+    //       setPosts((prev) => [...prev, ...data.posts]);
+    //     }
+    //   });
   }, [posts, path]);
 
   const onRefresh = (done: () => void) => {
     setPosts([]);
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    fetch("/posts")
-      .then((res) => res.json())
-      .then((data) => {
-        setPosts(data.posts);
-      })
-      .finally(() => {
-        done();
-      });
+    if (__DEV__) {
+      fetch("/posts")
+        .then((res) => res.json())
+        .then((data) => {
+          setPosts(data.posts);
+        })
+        .finally(() => {
+          done();
+        });
+    }
   };
 
   const onPanRelease = () => {

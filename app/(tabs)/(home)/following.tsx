@@ -27,26 +27,30 @@ export default function Following() {
   const { pullDownPosition } = useContext(AnimationContext);
 
   const onEndReached = useCallback(() => {
-    fetch(`/posts?type=following&cursor=${posts.at(-1)?.id}`)
-      .then((res) => res.json())
-      .then((data) => {
-        if (data.posts.length > 0) {
-          setPosts((prev) => [...prev, ...data.posts]);
-        }
-      });
+    if (__DEV__) {
+      fetch(`/posts?type=following&cursor=${posts.at(-1)?.id}`)
+        .then((res) => res.json())
+        .then((data) => {
+          if (data.posts.length > 0) {
+            setPosts((prev) => [...prev, ...data.posts]);
+          }
+        });
+    }
   }, [posts, path]);
 
   const onRefresh = (done: () => void) => {
     setPosts([]);
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    fetch("/posts?type=following")
-      .then((res) => res.json())
-      .then((data) => {
-        setPosts(data.posts);
-      })
-      .finally(() => {
-        done();
-      });
+    if (__DEV__) {
+      fetch("/posts?type=following")
+        .then((res) => res.json())
+        .then((data) => {
+          setPosts(data.posts);
+        })
+        .finally(() => {
+          done();
+        });
+    }
   };
 
   const onPanRelease = () => {

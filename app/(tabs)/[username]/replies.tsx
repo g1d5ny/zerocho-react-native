@@ -23,11 +23,13 @@ export default function Replies() {
   useEffect(() => {
     setThreads([]);
     console.log("username: ", username);
-    fetch(`/users/${username?.slice(1)}/replies`)
-      .then((res) => res.json())
-      .then((data) => {
-        setThreads(data.posts);
-      });
+    if (__DEV__) {
+      fetch(`/users/${username?.slice(1)}/replies`)
+        .then((res) => res.json())
+        .then((data) => {
+          setThreads(data.posts);
+        });
+    }
   }, [username]);
 
   const onEndReached = () => {
@@ -35,13 +37,15 @@ export default function Replies() {
       "onEndReached",
       `/users/${username?.slice(1)}/replies?cursor=${threads.at(-1)?.id}`
     );
-    fetch(`/users/${username?.slice(1)}/replies?cursor=${threads.at(-1)?.id}`)
-      .then((res) => res.json())
-      .then((data) => {
-        if (data.posts.length > 0) {
-          setThreads((prev) => [...prev, ...data.posts]);
-        }
-      });
+    if (__DEV__) {
+      fetch(`/users/${username?.slice(1)}/replies?cursor=${threads.at(-1)?.id}`)
+        .then((res) => res.json())
+        .then((data) => {
+          if (data.posts.length > 0) {
+            setThreads((prev) => [...prev, ...data.posts]);
+          }
+        });
+    }
   };
 
   return (

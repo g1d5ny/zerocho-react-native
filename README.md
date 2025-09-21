@@ -44,11 +44,13 @@ mirage: 서버 모킹 라이브러리. fetch 요청을 가로채서 가짜 API �
 (실무에서는 api가 나오기 전에 내가 임시로 데이터 설정하여 UI 작업할 수 있음.)
 
 #### fetch
+
 1. 자바스크립트 내장 API
 2. response json 변환 필요
 3. 복잡한 처리가 힘들어 간단한 요청에 유리
 
 #### axios
+
 1. http 관련 라이브러리
 2. response json 자동 변환
 3. 에러처리, 인터셉터 등 복잡한 API 통신에 유리
@@ -126,19 +128,24 @@ app.json 내 속성 `experimentalLauncherActivity: true`로 하면 안드로이�
 **웹뷰: 컴포넌트 (앱 내에 웹사이트를 내장)**
 
 ## Section 4
+
 ### FlatList : RN의 기본 가상화 리스트인 VirtualizedList를 기반으로 한 리스트 뷰
+
 1. lazy Loading: 화면에 보이는 아이템 + 약간의 버퍼만 메모리에 둠
 2. 아이템 크기를 스크롤 할 때마다 측정해야함
-  => 리스트가 길어질수록 측정 지연, 빈 화면 같은 현상이 생김
+   => 리스트가 길어질수록 측정 지연, 빈 화면 같은 현상이 생김
 3. 재사용 X: 안보이는 아이템을 unmount -> 다시 mount
    => 메모리 chrun (메모리 할당/해제 자주 일어나는 현상) 발생
 4. windowSize 속성: 한 화면에 몇 배수의 아이템을 메모리에 유지할지 정하는 속성
-  - 스크롤을 빨리 하든, 천천히 하든, 위아래로 항상 같은 양의 버퍼만 렌더링
-  - windowSize가 작으면 -> 스크롤 빠르게 할 때 빈 화면 생김
-  - windowSize가 크면 -> 메모리 과다 사용, 불필요한 render 발생
+
+- 스크롤을 빨리 하든, 천천히 하든, 위아래로 항상 같은 양의 버퍼만 렌더링
+- windowSize가 작으면 -> 스크롤 빠르게 할 때 빈 화면 생김
+- windowSize가 크면 -> 메모리 과다 사용, 불필요한 render 발생
 
 ### FlashList
+
 1. FlatList보다 성능 좋은 리스트뷰 (FlatList의 한계가 보완돼서 나옴)
+
    - 정확한 아이템 크기 추정: 초기에 한 번만 아이템 크기를 측정하고 이후에는 캐싱된 크기를 사용함
    - estimatedItemSize 속성을 이용하여 더 빠르게 레이아웃 계산
      => 스크롤할 때 매번 측정하는 비용 제거
@@ -149,14 +156,20 @@ app.json 내 속성 `experimentalLauncherActivity: true`로 하면 안드로이�
    - Window 관리 개선: FlatList는 단순히 windowSize 버퍼만 사용하지만, FlashList는 동적 window 관리를 함
 
      #### 동적 window 원리
+
      1. 스크롤 속도 기반으로 window 크기를 조절
-       - 사용자가 천천히 스크롤 -> 작은 window로도 충분
-       - 사용자가 빨리 스크롤 -> window 크기를 순간적으로 늘려서, 미리 더 많은 아이템을 렌더링 -> blank 없이 매끄럽게 보임
+
+     - 사용자가 천천히 스크롤 -> 작은 window로도 충분
+     - 사용자가 빨리 스크롤 -> window 크기를 순간적으로 늘려서, 미리 더 많은 아이템을 렌더링 -> blank 없이 매끄럽게 보임
+
      2. 방향성 고려
-       - 지금 스크롤하는 방향을 감지해서 스크롤할 가능성이 높은 쪽에 더 많은 아이템을 준비하고 반대쪽은 줄임
+
+     - 지금 스크롤하는 방향을 감지해서 스크롤할 가능성이 높은 쪽에 더 많은 아이템을 준비하고 반대쪽은 줄임
+
      3. 화면 크기 / density 반영
-       - 태블릿과 같은 큰 화면에서는 더 많은 아이템을 한 번에 보이니까 window도 유연하게 늘려줌
-   
+
+     - 태블릿과 같은 큰 화면에서는 더 많은 아이템을 한 번에 보이니까 window도 유연하게 늘려줌
+
 2. ver 1, 2가 있음. 2는 아직 알파 단계로 실무에서는 아직 적용 불가
 3. ver 2는 없어진 속성들이 많음. 그 중에서 estimatedSize가 있는데, 2에선 개발자가 속성을 지정하지 않아도 FlashList에서 알아서 최적화를 해줌
 4. expo53은 ver1을 씀 (ver2 안정화 이슈로)
@@ -164,10 +177,12 @@ app.json 내 속성 `experimentalLauncherActivity: true`로 하면 안드로이�
 6. keyExtractor가 필요 없음
 
 ### Animation
+
 1. useSharedValue
-  - 애니메이션 처리를 할 때 사용하는 값
-  -  JS 스레드가 아닌 UI 스레드에서 동작함
-  -  JS와 Native 스레드 간 공유 가능
+
+- 애니메이션 처리를 할 때 사용하는 값
+- JS 스레드가 아닌 UI 스레드에서 동작함
+- JS와 Native 스레드 간 공유 가능
 
 2. panResponder
    - Pan: 터치 스크린에서 손가락을 드래그하는 동작
@@ -176,14 +191,17 @@ app.json 내 속성 `experimentalLauncherActivity: true`로 하면 안드로이�
    - onStartShouldSetPanResponder
      - true -> 패닝 이벤트를 받아서 애니메이션 처리를 할 수 있게 해줌
      - false -> 패닝 이벤트를 받지 않음
-  - onPanResponderMove: 패닝 이벤트가 발생할 때 마다 호출됨
-  - onPanResponderRelease: 패닝 이벤트가 끝났을 때 호출됨
-  - onPanResponderTerminate: 패닝 이벤트가 중단되었을 떄 호출됨
+
+- onPanResponderMove: 패닝 이벤트가 발생할 때 마다 호출됨
+- onPanResponderRelease: 패닝 이벤트가 끝났을 때 호출됨
+- onPanResponderTerminate: 패닝 이벤트가 중단되었을 떄 호출됨
 
 3. useAnimatedScrollHandler: 스크롤 이벤트를 받아서 애니메이션 처리를 할 수 있게 도와줌
 
 ## Section 5
+
 ### Push Notification
+
 1. Local Notification
    - 앱 내부에서 생성되고 처리되는 알림
    - 앱이 실행 중이거나 백그라운드에 있을 때 생성
@@ -191,13 +209,15 @@ app.json 내 속성 `experimentalLauncherActivity: true`로 하면 안드로이�
    - 인터넷 연결 필요 없음
    - ex) 타이머, 알람, 일정 리마인더 등
 2. Remote Notification
-  - 서버에서 전송되는 알림
-  - 서버에서 메시지 처리
-  - 앱이 종료되어 있어도 수신 가능
-  - 인터넷 연결 필요
-  - ex) 소셜 미디어 알림, 채팅 등
+
+- 서버에서 전송되는 알림
+- 서버에서 메시지 처리
+- 앱이 종료되어 있어도 수신 가능
+- 인터넷 연결 필요
+- ex) 소셜 미디어 알림, 채팅 등
 
 ### 각종 빌드 정리
+
 1. Expo Go
    - Metro (Dev Server) + Dev App (Native X)
    - npx expo start --android
@@ -212,37 +232,45 @@ app.json 내 속성 `experimentalLauncherActivity: true`로 하면 안드로이�
    - eas build --platform android
    - production ready
    - Metro Server X -> Your backend server
-   - MirageJS disable (if(__DEV__) 사용 필요)
+   - MirageJS disable (if(**DEV**) 사용 필요)
 
 ### 환경변수
+
 1. .env.local이 .env보다 우선순위가 더 높음
 2. 환경 변수 지정하는 방법
-   - process.env.EXPO_PUBLIC_KAKAO_APP_KEY (is defined in .env.local or .env)
+   - process.env.KAKAO_APP_KEY (is defined in .env.local or .env)
    - Constants.expoConfig?.extra?.kakaoAppKey (is defined in app.config.js)
 3. app.config.js extras: 정말 민감한 비밀 값(예: 백엔드 서버 관리자 키)을 Expo 앱 내에서 관리할 때 노출 위험이 있어 가장 권장되지 않는 방식
-5. app.json vs. app.config.js
-  - app.json
-    1. 순수한 JSON 형식의 설정 파일
-    2. 환경 변수 사용 불가 (-> app.config.js에서 사용해야함)
-    3. expo 설정에 적합
-  - app.config.js
-    1. js 코드를 실행할 수 있는 설정 파일
-    2. process.env를 통해 환경 변수 사용 가능
-    3. 런타임에 설정 값 계산 가능
+4. app.json vs. app.config.js
+
+   - app.json
+     1. 순수한 JSON 형식의 설정 파일
+     2. 환경 변수 사용 불가 (-> app.config.js에서 사용해야함)
+     3. expo 설정에 적합
+   - app.config.js
+     1. js 코드를 실행할 수 있는 설정 파일
+     2. process.env를 통해 환경 변수 사용 가능
+     3. 런타임에 설정 값 계산 가능
+
 5. 이슈: eas build할 떄, 환경 변수가 git으로 인식되지 않으면 반영이 안되는 이슈가 있음
-  해결 방법 1: expo 홈페이지에서 환경변수 입력란에 환경변수 추가함
-  해결 방법 2: .env를 git에 잠시 인식되도록 하고 eas build 후 .env를 다시 gitignore
+   해결 방법 1: expo 홈페이지에서 환경변수 입력란에 환경변수 추가함
+   해결 방법 2: .env를 git에 잠시 인식되도록 하고 eas build 후 .env를 다시 gitignore
 
 ## Section 6
+
 ### EAS Build
+
 - 소스 코드를 클라우드로 전송해 빌드하며, Windows 같은 환경에서도 iOS 앱 빌드를 가능하게 하는 것이 큰 장점
 - 로컬 환경이나 업데이트 기능과는 다름
 
 ### Expo Orbit
+
 - 로컬 빌드나 EAS 빌드를 선택하여 연결된 실제 기기나 에뮬레이터에서 쉽게 실행하고 관리할 수 있는 도구
 - 배포나 업데이트 기능과는 다름
 
 ### Expo Modules
+
 expo module 생성하는 법
+
 1. npx create-expo-module@latest (--local)
 2. npx expo install expo-modules-core

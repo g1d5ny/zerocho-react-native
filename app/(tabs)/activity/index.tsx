@@ -28,9 +28,11 @@ export default function Index() {
   const [activity, setActivity] = useState<ActivityItemProps[]>([]);
 
   useEffect(() => {
-    fetch("/activity")
-      .then((res) => res.json())
-      .then((data) => setActivity(data.activity));
+    if (__DEV__) {
+      fetch("/activity")
+        .then((res) => res.json())
+        .then((data) => setActivity(data.activity));
+    }
   }, []);
 
   if (

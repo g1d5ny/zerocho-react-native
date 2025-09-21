@@ -7,6 +7,7 @@ import { Href, router, Stack } from "expo-router";
 import * as SecureStore from "expo-secure-store";
 import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
+import * as Updates from "expo-updates";
 import { createContext, useContext, useEffect, useRef, useState } from "react";
 import { Alert, Animated, Linking, StyleSheet, View } from "react-native";
 import Toast, { BaseToast } from "react-native-toast-message";
@@ -101,30 +102,32 @@ function AnimatedAppLoader({
 
   const login = () => {
     console.log("login");
-    return fetch("/login", {
-      method: "POST",
-      body: JSON.stringify({
-        username: "jiwonii",
-        password: "123456",
-      }),
-    })
-      .then((res) => {
-        console.log("res", res, res.status);
-        if (res.status >= 400) {
-          return Alert.alert("Error", "Invalid credentials");
-        }
-        return res.json();
+    if (__DEV__) {
+      return fetch("/login", {
+        method: "POST",
+        body: JSON.stringify({
+          username: "jiwonii",
+          password: "123456",
+        }),
       })
-      .then((data) => {
-        console.log("data", data);
-        setUser(data.user);
-        return Promise.all([
-          SecureStore.setItemAsync("accessToken", data.accessToken),
-          SecureStore.setItemAsync("refreshToken", data.refreshToken),
-          AsyncStorage.setItem("user", JSON.stringify(data.user)),
-        ]);
-      })
-      .catch(console.error);
+        .then((res) => {
+          console.log("res", res, res.status);
+          if (res.status >= 400) {
+            return Alert.alert("Error", "Invalid credentials");
+          }
+          return res.json();
+        })
+        .then((data) => {
+          console.log("data", data);
+          setUser(data.user);
+          return Promise.all([
+            SecureStore.setItemAsync("accessToken", data.accessToken),
+            SecureStore.setItemAsync("refreshToken", data.refreshToken),
+            AsyncStorage.setItem("user", JSON.stringify(data.user)),
+          ]);
+        })
+        .catch(console.error);
+    }
   };
 
   const logout = () => {
@@ -164,18 +167,19 @@ async function sendPushNotification(expoPushToken: string) {
     body: "And here is the body!",
     data: { someData: "goes here" },
   };
-
-  await fetch("https://exp.host/--/api/v2/push/send", {
-    method: "POST",
-    headers: {
-      Accept: "application/json",
-      "Accept-encoding": "gzip, deflate",
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(message),
-  })
-    .then((res) => res.json())
-    .then((data) => console.log("111data: ", data));
+  if (__DEV__) {
+    await fetch("https://exp.host/--/api/v2/push/send", {
+      method: "POST",
+      headers: {
+        Accept: "application/json",
+        "Accept-encoding": "gzip, deflate",
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(message),
+    })
+      .then((res) => res.json())
+      .then((data) => console.log("111data: ", data));
+  }
 }
 
 function AnimatedSplashScreen({
@@ -203,6 +207,35 @@ function AnimatedSplashScreen({
     }
   }, [isAppReady]);
 
+  const { currentlyRunning, isUpdateAvailable, isUpdatePending } =
+    Updates.useUpdates();
+  console.log("currentlyRunning", currentlyRunning);
+  console.log("isUpdateAvailable", isUpdateAvailable);
+  console.log("isUpdatePending", isUpdatePending);
+
+  async function onFetchUpdateAsync() {
+    try {
+      if (!__DEV__) {
+        const update = await Updates.checkForUpdateAsync();
+
+        if (update.isAvailable) {
+          await Updates.fetchUpdateAsync();
+          Alert.alert("Update available", "Please update your app", [
+            {
+              text: "Update",
+              onPress: () => Updates.reloadAsync(),
+            },
+            { text: "Cancel", style: "cancel" },
+          ]);
+        }
+      }
+    } catch (error) {
+      console.error(error);
+      // You can also add an alert() to see the error message in case of an error when fetching updates.
+      alert(`Error fetching latest Expo update: ${error}`);
+    }
+  }
+
   const onImageLoaded = async () => {
     try {
       // 데이터 준비
@@ -210,8 +243,10 @@ function AnimatedSplashScreen({
         AsyncStorage.getItem("user").then((user) => {
           updateUser?.(user ? JSON.parse(user) : null);
         }),
+        onFetchUpdateAsync(),
         // TODO: 토큰 유효성 검사
       ]);
+
       await SplashScreen.hideAsync();
       const { status } = await Notifications.requestPermissionsAsync();
       if (status !== "granted") {

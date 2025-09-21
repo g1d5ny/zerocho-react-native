@@ -47,12 +47,14 @@ export default function TabLayout() {
     console.log("username", username, `@${user?.id}`);
     if (username !== `@${user?.id}`) {
       setProfile(null);
-      fetch(`/users/${username}`)
-        .then((res) => res.json())
-        .then((data) => {
-          console.log("fetch user", data);
-          setProfile(data.user);
-        });
+      if (__DEV__) {
+        fetch(`/users/${username}`)
+          .then((res) => res.json())
+          .then((data) => {
+            console.log("fetch user", data);
+            setProfile(data.user);
+          });
+      }
     } else {
       setProfile(user);
     }

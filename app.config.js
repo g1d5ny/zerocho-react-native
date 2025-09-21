@@ -4,8 +4,8 @@ export default {
     slug: "threads",
     version: "1.0.0",
     orientation: "portrait",
-    icon: "./assets/images/icon.png",
-    scheme: "threadc",
+    icon: "./assets/images/avatar.png",
+    scheme: "threads",
     userInterfaceStyle: "automatic",
     newArchEnabled: true,
     ios: {
@@ -14,8 +14,15 @@ export default {
       infoPlist: {
         ITSAppUsesNonExemptEncryption: false,
       },
+      runtimeVersion: "1.0.0",
+    },
+    updates: {
+      url: "https://u.expo.dev/1f6f26aa-c843-46fe-b90a-e45d41473423",
     },
     android: {
+      runtimeVersion: {
+        policy: "appVersion",
+      },
       adaptiveIcon: {
         foregroundImage: "./assets/images/adaptive-icon.png",
         backgroundColor: "#ffffff",
@@ -92,7 +99,7 @@ export default {
       [
         "@react-native-kakao/core",
         {
-          nativeAppKey: process.env.KAKAO_APP_KEY,
+          nativeAppKey: "2d6a890ed320e205e6de1a17f7230856",
           android: {
             authCodeHandlerActivity: true,
           },
@@ -106,7 +113,7 @@ export default {
       typedRoutes: true,
     },
     extra: {
-      kakaoAppKey: process.env.KAKAO_APP_KEY,
+      kakaoAppKey: "2d6a890ed320e205e6de1a17f7230856",
       router: {},
       eas: {
         projectId: "1f6f26aa-c843-46fe-b90a-e45d41473423",

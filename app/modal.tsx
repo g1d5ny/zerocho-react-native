@@ -1,9 +1,11 @@
+import BackgroundUploaderModule from "@/modules/background-uploader/src/BackgroundUploaderModule";
 import { FontAwesome, Ionicons } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
 import * as Location from "expo-location";
 import * as MediaLibrary from "expo-media-library";
+import { EventEmitter } from "expo-modules-core";
 import { useRouter } from "expo-router";
-import React, { useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import {
   Alert,
   FlatList,
@@ -20,6 +22,7 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Toast from "react-native-toast-message";
+import { AuthContext } from "./_layout";
 
 interface Thread {
   id: string;
@@ -65,8 +68,47 @@ export default function Modal() {
   const [replyOption, setReplyOption] = useState("Anyone");
   const [isDropdownVisible, setIsDropdownVisible] = useState(false);
   const [isPosting, setIsPosting] = useState(false);
+  const { user } = useContext(AuthContext);
 
   const replyOptions = ["Anyone", "Profiles you follow", "Mentioned only"];
+
+  useEffect(() => {
+    const emitter = new EventEmitter<Record<string, any>>();
+    const sub = emitter.addListener(
+      "uploadFinished",
+      (data: { threadId8: string; success: boolean }) => {
+        console.log("uploadFinished", data);
+        if (data.success) {
+          console.log("uploadFinished", data);
+          Toast.hide();
+          Toast.show({
+            text1: "Post posted",
+            type: "customToast",
+            visibilityTime: 5000,
+            position: "bottom",
+            bottomOffset: 20,
+            onPress: () => {
+              console.log("post pressed", data);
+              router.replace(`/@${user?.id}/post/${data.threadId8}`);
+              Toast.hide();
+            },
+          });
+        } else {
+          Toast.hide();
+          Toast.show({
+            text1: "Post failed",
+            type: "customToast",
+            visibilityTime: 5000,
+            position: "bottom",
+            bottomOffset: 20,
+          });
+        }
+      }
+    );
+    return () => {
+      sub.remove();
+    };
+  }, []);
 
   const handleCancel = () => {
     if (isPosting) return;
@@ -75,68 +117,16 @@ export default function Modal() {
 
   const handlePost = () => {
     console.log("handlePost", threads);
-    const formData = new FormData();
-    threads.forEach((thread, index) => {
-      formData.append(`posts[${index}][id]`, thread.id);
-      formData.append(`posts[${index}][content]`, thread.text);
-      formData.append(`posts[${index}][userId]`, "jiwon");
-      formData.append(
-        `posts[${index}][location]`,
-        JSON.stringify(thread.location)
-      );
-      thread.imageUrls.forEach((imageUrl, imageIndex) => {
-        formData.append(`posts[${index}][imageUrls][${imageIndex}]`, {
-          uri: imageUrl,
-          name: `image_${index}_${imageIndex}.jpeg`,
-          type: "image/jpeg",
-        } as unknown as Blob);
-      });
-    });
 
     Toast.show({
       text1: "Posting...",
-      text2: "Please wait...",
       type: "customToast",
       visibilityTime: 5000,
       position: "bottom",
       bottomOffset: 20,
     });
 
-    fetch("/posts", {
-      method: "POST",
-      headers: {
-        "Content-Type": "multipart/form-data",
-      },
-      body: formData,
-    })
-      .then((res) => res.json())
-      .then((data) => {
-        console.log("post result", data, data[0].userId, data[0].id);
-        Toast.hide();
-        Toast.show({
-          text1: "Post posted",
-          type: "customToast",
-          visibilityTime: 5000,
-          position: "bottom",
-          bottomOffset: 20,
-          onPress: () => {
-            console.log("post pressed", data);
-            router.replace(`/@${data[0].userId}/post/${data[0].id}`);
-            Toast.hide();
-          },
-        });
-      })
-      .catch((err) => {
-        console.error("post error", err);
-        Toast.hide();
-        Toast.show({
-          text1: "Post failed",
-          type: "customToast",
-          visibilityTime: 5000,
-          position: "bottom",
-          bottomOffset: 20,
-        });
-      });
+    BackgroundUploaderModule.startUpload(JSON.stringify(threads));
   };
 
   const updateThreadText = (id: string, text: string) => {

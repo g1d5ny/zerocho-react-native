@@ -22,11 +22,13 @@ export default function Reposts() {
 
   useEffect(() => {
     setThreads([]);
-    fetch(`/users/${username?.slice(1)}/reposts`)
-      .then((res) => res.json())
-      .then((data) => {
-        setThreads(data.posts);
-      });
+    if (__DEV__) {
+      fetch(`/users/${username?.slice(1)}/reposts`)
+        .then((res) => res.json())
+        .then((data) => {
+          setThreads(data.posts);
+        });
+    }
   }, [username]);
 
   const onEndReached = () => {
@@ -34,13 +36,15 @@ export default function Reposts() {
       "onEndReached",
       `/users/${username?.slice(1)}/reposts?cursor=${threads.at(-1)?.id}`
     );
-    fetch(`/users/${username?.slice(1)}/reposts?cursor=${threads.at(-1)?.id}`)
-      .then((res) => res.json())
-      .then((data) => {
-        if (data.posts.length > 0) {
-          setThreads((prev) => [...prev, ...data.posts]);
-        }
-      });
+    if (__DEV__) {
+      fetch(`/users/${username?.slice(1)}/reposts?cursor=${threads.at(-1)?.id}`)
+        .then((res) => res.json())
+        .then((data) => {
+          if (data.posts.length > 0) {
+            setThreads((prev) => [...prev, ...data.posts]);
+          }
+        });
+    }
   };
 
   return (

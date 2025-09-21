@@ -68,11 +68,13 @@ export default function Index() {
 
   useEffect(() => {
     setThreads([]);
-    fetch(`/users/${username?.slice(1)}/threads`)
-      .then((res) => res.json())
-      .then((data) => {
-        setThreads(data.posts);
-      });
+    if (__DEV__) {
+      fetch(`/users/${username?.slice(1)}/threads`)
+        .then((res) => res.json())
+        .then((data) => {
+          setThreads(data.posts);
+        });
+    }
   }, [username]);
 
   const onEndReached = () => {
@@ -80,13 +82,15 @@ export default function Index() {
       "onEndReached",
       `/users/${username?.slice(1)}/threads?cursor=${threads.at(-1)?.id}`
     );
-    fetch(`/users/${username?.slice(1)}/threads?cursor=${threads.at(-1)?.id}`)
-      .then((res) => res.json())
-      .then((data) => {
-        if (data.posts.length > 0) {
-          setThreads((prev) => [...prev, ...data.posts]);
-        }
-      });
+    if (__DEV__) {
+      fetch(`/users/${username?.slice(1)}/threads?cursor=${threads.at(-1)?.id}`)
+        .then((res) => res.json())
+        .then((data) => {
+          if (data.posts.length > 0) {
+            setThreads((prev) => [...prev, ...data.posts]);
+          }
+        });
+    }
   };
 
   return (

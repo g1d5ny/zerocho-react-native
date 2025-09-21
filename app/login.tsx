@@ -41,9 +41,9 @@ export default function Login() {
   };
 
   useEffect(() => {
-    // process.env.EXPO_PUBLIC_KAKAO_APP_KEY is defined in .env.local
+    // process.env.KAKAO_APP_KEY is defined in .env.local
     // Constants.expoConfig?.extra?.kakaoAppKey is defined in app.json
-    initializeKakaoSDK(process.env.EXPO_PUBLIC_KAKAO_APP_KEY as string);
+    initializeKakaoSDK(process.env.KAKAO_APP_KEY as string);
   }, []);
 
   if (isLoggedIn) {

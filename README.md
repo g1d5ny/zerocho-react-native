@@ -234,6 +234,14 @@ app.json 내 속성 `experimentalLauncherActivity: true`로 하면 안드로이�
   해결 방법 2: .env를 git에 잠시 인식되도록 하고 eas build 후 .env를 다시 gitignore
 
 ## Section 6
+### EAS Build
+- 소스 코드를 클라우드로 전송해 빌드하며, Windows 같은 환경에서도 iOS 앱 빌드를 가능하게 하는 것이 큰 장점
+- 로컬 환경이나 업데이트 기능과는 다름
+
+### Expo Orbit
+- 로컬 빌드나 EAS 빌드를 선택하여 연결된 실제 기기나 에뮬레이터에서 쉽게 실행하고 관리할 수 있는 도구
+- 배포나 업데이트 기능과는 다름
+
 ### Expo Modules
 expo module 생성하는 법
 1. npx create-expo-module@latest (--local)
